@@ -1040,6 +1040,44 @@ body {
   max-width: 200px;
 }
 
+/* Confirmation Modal */
+.confirm-modal {
+  max-width: 400px;
+  text-align: center;
+  padding: 40px 30px;
+}
+
+.confirm-icon {
+  font-size: 50px;
+  margin-bottom: 20px;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.confirm-actions .action-btn {
+  flex: 1;
+}
+
+.action-btn.danger {
+  background: #ff4757;
+  color: #fff;
+}
+
+.action-btn.danger-outline {
+  background: transparent;
+  color: #ff4757;
+  border: 1px solid rgba(255, 71, 87, 0.3);
+}
+
+.action-btn.danger-outline:hover {
+  background: rgba(255, 71, 87, 0.1);
+  border-color: #ff4757;
+}
+
 /* Mobile Responsive Enhancements */
 @media (max-width: 768px) {
   .navbar {

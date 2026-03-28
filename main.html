@@ -160,6 +160,46 @@
         </section>
     </main>
 
+    <!-- ===== PROFILE MODAL ===== -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-box profile-modal">
+            <button class="modal-close" onclick="closeModal('profileModal')">&times;</button>
+            <div class="profile-header">
+                <div class="profile-avatar">👤</div>
+                <h2 id="profileUsername">Player Name</h2>
+                <div class="profile-badge" id="profileTier">Unranked</div>
+            </div>
+            <div class="profile-stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Total Points</span>
+                    <span class="stat-value" id="profilePoints">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">ETH Balance</span>
+                    <span class="stat-value" id="profileEth">0.0</span>
+                </div>
+            </div>
+            <div style="margin-top:20px; text-align:center;">
+                <button class="action-btn danger-outline" onclick="deleteAccount()" style="padding: 10px 20px; font-size: 13px;">
+                    <i class="fas fa-trash-alt"></i> Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CONFIRMATION MODAL (REUSABLE) ===== -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box confirm-modal">
+            <div class="confirm-icon" id="confirmIcon">❓</div>
+            <h2 id="confirmTitle">Are you sure?</h2>
+            <p id="confirmMessage">This action cannot be undone.</p>
+            <div class="confirm-actions">
+                <button class="action-btn secondary" onclick="closeModal('confirmModal')">Cancel</button>
+                <button class="action-btn" id="confirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== STATS MODAL ===== -->
     <div class="modal-overlay" id="statsModal">
         <div class="modal-box">

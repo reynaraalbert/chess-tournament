@@ -457,6 +457,50 @@ function highlightTierCards(tierKey) {
 
 // Terminate Session  
 function logout() {
-    localStorage.removeItem('currentUser');
-    window.location.href = 'index.html';
+    showConfirm({
+        title: 'Logout Match?',
+        message: 'Are you sure you want to log out? Your progress is saved automatically.',
+        icon: '🚪',
+        btnText: 'Log Out',
+        onConfirm: () => {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+    });
+}
+
+function deleteAccount() {
+    showConfirm({
+        title: 'Delete Account?',
+        message: 'All your ELO, ETH, and skins will be PERMANENTLY deleted. This cannot be undone!',
+        icon: '⚠️',
+        btnText: 'DELETE PERMANENTLY',
+        btnClass: 'danger',
+        onConfirm: () => {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+    });
+}
+
+/**
+ * Reusable Confirmation Modal
+ * @param {Object} options - {title, message, icon, btnText, btnClass, onConfirm}
+ */
+function showConfirm(options) {
+    document.getElementById('confirmTitle').textContent = options.title || 'Are you sure?';
+    document.getElementById('confirmMessage').textContent = options.message || '';
+    document.getElementById('confirmIcon').textContent = options.icon || '❓';
+    
+    const confirmBtn = document.getElementById('confirmBtn');
+    confirmBtn.textContent = options.btnText || 'Confirm';
+    confirmBtn.className = 'action-btn ' + (options.btnClass || 'primary');
+    
+    // Set new click handler
+    confirmBtn.onclick = () => {
+        if (options.onConfirm) options.onConfirm();
+        closeModal('confirmModal');
+    };
+    
+    openModal('confirmModal');
 }
