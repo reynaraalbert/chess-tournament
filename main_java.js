@@ -239,6 +239,10 @@ document.addEventListener('change', (e) => {
 const SHOP_ITEMS = {
     boards: [
         { id: 'default', name: 'Classic Wood', price: 0, class: 'board-default', img: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=200' },
+        { id: 'red',     name: 'Simple Red',    price: 0, class: 'board-red',     img: 'img/red_board.png' },
+        { id: 'blue',    name: 'Simple Blue',   price: 0, class: 'board-blue',    img: 'img/blue_board.png' },
+        { id: 'green',   name: 'Simple Green',  price: 0, class: 'board-green',   img: 'img/green_board.png' },
+        { id: 'marble',  name: 'Marble Stone',  price: 0, class: 'board-marble',  img: 'img/marble_board.png' },
         { id: 'ocean',   name: 'Ocean Blue',   price: 2.0, class: 'board-ocean', img: 'img/ocean_board.png' },
         { id: 'forest',  name: 'Forest Green', price: 2.5, class: 'board-forest', img: 'img/forest_board.png' },
         { id: 'dark',    name: 'Midnight',     price: 3.5, class: 'board-dark', img: 'img/midnight_board.png' },
@@ -295,6 +299,7 @@ function renderShopItems() {
     const owned = JSON.parse(localStorage.getItem('ownedSkins') || '["default", "wikipedia"]');
     const equippedBoard = localStorage.getItem('equippedBoard') || 'default';
     const equippedPieces = localStorage.getItem('equippedPieces') || 'wikipedia';
+    const hasUsedFreeClaim = localStorage.getItem('hasUsedFreeClaim') === 'true';
 
     container.innerHTML = '';
     
@@ -303,12 +308,13 @@ function renderShopItems() {
         const isEquipped = (activeShopTab === 'boards' && equippedBoard === item.id) || 
                            (activeShopTab === 'pieces' && equippedPieces === item.id);
         
-        const card = document.createElement('div');
-        card.className = `shop-item ${isEquipped ? 'equipped' : ''}`;
-        
         const previewHtml = item.img 
             ? `<img src="${item.img}" style="width:100%; height:100%; object-fit:cover;" onclick="previewItem('${activeShopTab}', '${item.id}')">` 
             : `<div class="item-preview-board" onclick="previewItem('${activeShopTab}', '${item.id}')"><div></div><div style="opacity:0.5"></div><div style="opacity:0.5"></div><div></div></div>`;
+
+        let priceDisplay = `<i class="fa-brands fa-ethereum"></i> ${item.price.toFixed(1)}`;
+        if (item.price === 0) priceDisplay = 'FREE';
+        else if (!hasUsedFreeClaim) priceDisplay = '<span style="color:#2ecc71">FREE (Claim)</span>';
 
         card.innerHTML = `
             <div class="item-preview">
@@ -316,10 +322,10 @@ function renderShopItems() {
             </div>
             <div class="item-name">${item.name}</div>
             <div class="item-footer">
-                <div class="item-price">${isOwned ? 'Owned' : `<i class="fa-brands fa-ethereum"></i> ${item.price.toFixed(1)}`}</div>
+                <div class="item-price">${isOwned ? 'Owned' : priceDisplay}</div>
                 ${isOwned 
                     ? `<button class="item-btn ${isEquipped ? 'equipped' : 'equip'}" onclick="equipItem('${activeShopTab}', '${item.id}')">${isEquipped ? 'Equipped' : 'Equip'}</button>`
-                    : `<button class="item-btn buy" onclick="buyItem('${activeShopTab}', '${item.id}', ${item.price})">Buy</button>`
+                    : `<button class="item-btn buy" onclick="buyItem('${activeShopTab}', '${item.id}', ${item.price})">${(!hasUsedFreeClaim && item.price > 0) ? 'Claim' : 'Buy'}</button>`
                 }
             </div>
         `;
@@ -332,40 +338,58 @@ function previewItem(category, id) {
     if (!item) return;
 
     const owned = JSON.parse(localStorage.getItem('ownedSkins') || '["default", "wikipedia"]');
-    const equippedBoard = localStorage.getItem('equippedBoard') || 'default';
-    const equippedPieces = localStorage.getItem('equippedPieces') || 'wikipedia';
-    
+    const hasUsedFreeClaim = localStorage.getItem('hasUsedFreeClaim') === 'true';
     const isOwned = owned.includes(id);
-    const isEquipped = (category === 'boards' && equippedBoard === id) || 
-                       (category === 'pieces' && equippedPieces === id);
 
     document.getElementById('previewName').textContent = item.name;
     document.getElementById('previewImageContainer').innerHTML = `<img src="${item.img || ''}" alt="${item.name}">`;
     
     const actionsEl = document.getElementById('previewActions');
+    
+    let btnText = `Buy for ${item.price} ETH`;
+    let btnPrice = item.price;
+    if (item.price === 0) btnText = 'Get for Free';
+    else if (!hasUsedFreeClaim) {
+        btnText = 'Claim One-Time Freebie!';
+        btnPrice = 0;
+    }
+
     actionsEl.innerHTML = isOwned 
-        ? `<button class="action-btn ${isEquipped ? 'equipped' : 'equip'}" onclick="equipItem('${category}', '${id}'); closeModal('shopPreviewModal');">${isEquipped ? 'Equipped' : 'Equip Now'}</button>`
-        : `<button class="action-btn buy" onclick="buyItem('${category}', '${id}', ${item.price}); closeModal('shopPreviewModal');">Buy for ${item.price} ETH</button>`;
+        ? `<button class="action-btn equip" onclick="equipItem('${category}', '${id}'); closeModal('shopPreviewModal');">Equip Now</button>`
+        : `<button class="action-btn buy" onclick="buyItem('${category}', '${id}', ${btnPrice}); closeModal('shopPreviewModal');">${btnText}</button>`;
 
     openModal('shopPreviewModal');
 }
 
 function buyItem(category, id, price) {
     let eth = parseFloat(localStorage.getItem('userEth') || '0');
-    if (eth < price) {
-        showToast('Insufficient ETH balance!', 'error');
+    let hasUsedFreeClaim = localStorage.getItem('hasUsedFreeClaim') === 'true';
+    let finalPrice = price;
+
+    // Handle free claim voucher for PREMIUM items only
+    if (price > 0 && !hasUsedFreeClaim) {
+        finalPrice = 0;
+        localStorage.setItem('hasUsedFreeClaim', 'true');
+        showToast('Premium Item Claimed for Free! 🎁', 'success');
+    }
+
+    if (eth < finalPrice) {
+        showToast('Not enough ETH!', 'error');
         return;
     }
 
-    if (confirm(`Buy ${id} for ${price} ETH?`)) {
-        eth -= price;
+    if (finalPrice > 0) {
+        eth -= finalPrice;
         localStorage.setItem('userEth', eth.toString());
-        
-        const owned = JSON.parse(localStorage.getItem('ownedSkins') || '["default", "wikipedia"]');
+        showToast('Purchase successful!', 'success');
+    } else if (price === 0) {
+        showToast('Item added for free!', 'success');
+    }
+
+    const owned = JSON.parse(localStorage.getItem('ownedSkins') || '["default", "wikipedia"]');
+    if (!owned.includes(id)) {
         owned.push(id);
         localStorage.setItem('ownedSkins', JSON.stringify(owned));
-        
-        showToast('Purchase successful!', 'success');
         updateNavbarEth(); // Sync navbar on buy
         renderShopItems();
     }
@@ -401,6 +425,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (localStorage.getItem('ownedSkins') === null) {
         localStorage.setItem('ownedSkins', JSON.stringify(['default', 'wikipedia']));
+    }
+    if (localStorage.getItem('hasUsedFreeClaim') === null) {
+        localStorage.setItem('hasUsedFreeClaim', 'false');
     }
 
     updateNavbarEth(); // Initial navbar sync

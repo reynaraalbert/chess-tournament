@@ -954,6 +954,19 @@ body {
 .board-purple .white-1e1d7 { background-color: #efefef !important; }
 .board-purple .black-3c85d { background-color: #8a4ba1 !important; }
 
+/* Standard Boards */
+.board-red .white-1e1d7 { background-color: #ffffff !important; }
+.board-red .black-3c85d { background-color: #d63031 !important; }
+
+.board-blue .white-1e1d7 { background-color: #f1f2f6 !important; }
+.board-blue .black-3c85d { background-color: #1e90ff !important; }
+
+.board-green .white-1e1d7 { background-color: #f5f6fa !important; }
+.board-green .black-3c85d { background-color: #27ae60 !important; }
+
+.board-marble .white-1e1d7 { background-color: #f5f6fa !important; }
+.board-marble .black-3c85d { background-color: #bdc3c7 !important; }
+
 /* Dynamic System Animations */
 @keyframes pulse-gold {
   0% { transform: scale(1); box-shadow: 0 0 0 rgba(247, 147, 26, 0.4); }
