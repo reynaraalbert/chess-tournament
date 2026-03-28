@@ -246,12 +246,21 @@ function switchShopTab(tab) {
     renderShopItems();
 }
 
+function updateNavbarEth() {
+    const navEth = document.getElementById('navEthBalance');
+    if (navEth) {
+        const eth = parseFloat(localStorage.getItem('userEth') || '0');
+        navEth.querySelector('span').textContent = eth.toFixed(1);
+    }
+}
+
 function renderShopItems() {
     const container = document.getElementById('shopContent');
     const balanceEl = document.getElementById('shopEthBalance');
     
     let eth = parseFloat(localStorage.getItem('userEth') || '0');
     balanceEl.textContent = eth.toFixed(1);
+    updateNavbarEth(); // Also sync navbar
 
     const owned = JSON.parse(localStorage.getItem('ownedSkins') || '["default", "wikipedia"]');
     const equippedBoard = localStorage.getItem('equippedBoard') || 'default';
@@ -300,6 +309,7 @@ function buyItem(category, id, price) {
         localStorage.setItem('ownedSkins', JSON.stringify(owned));
         
         showToast('Purchase successful!', 'success');
+        updateNavbarEth(); // Sync navbar on buy
         renderShopItems();
     }
 }
@@ -335,6 +345,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('ownedSkins') === null) {
         localStorage.setItem('ownedSkins', JSON.stringify(['default', 'wikipedia']));
     }
+
+    updateNavbarEth(); // Initial navbar sync
 
     // Highlight active tier card on dashboard load
     const ptsRaw = localStorage.getItem('userPoints');

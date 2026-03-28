@@ -143,6 +143,27 @@ body {
   gap: 20px;
 }
 
+.nav-eth {
+  background: rgba(247, 147, 26, 0.12);
+  border: 1px solid rgba(247, 147, 26, 0.3);
+  color: #f7931a;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.nav-eth:hover {
+  background: rgba(247, 147, 26, 0.2);
+  border-color: rgba(247, 147, 26, 0.5);
+  transform: translateY(-2px);
+}
+
 .welcome-text {
   font-weight: 500;
   color: var(--text-light);
@@ -933,19 +954,27 @@ body {
 .board-purple .white-1e1d7 { background-color: #efefef !important; }
 .board-purple .black-3c85d { background-color: #8a4ba1 !important; }
 
-/* Responsive adjustments */
-@media (max-width: 900px) {
-  .tier-cards-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
+/* Mobile Responsive Enhancements */
 @media (max-width: 768px) {
+  .navbar {
+    padding: 15px 4%;
+  }
+  
+  .nav-brand span {
+    display: none; /* Hide 'Chess Tour' text on very small screens, keep icon */
+  }
+  
   .nav-user {
     gap: 10px;
   }
+  
   .welcome-text {
-    display: none;
+    display: none; /* Hide welcome text on mobile to save space */
+  }
+
+  .nav-eth {
+    padding: 5px 10px;
+    font-size: 13px;
   }
   .gradient-text {
     font-size: 32px;
