@@ -350,15 +350,36 @@
 
   <!-- Chess Rules & Game Logic -->
   <script>
+    // ───── Tier / Rank System ─────
+    const TIERS = [
+        { name: 'Unranked',      min: 0,    max: 300,  icon: '⬜' },
+        { name: 'Beginner',      min: 300,  max: 1000, icon: '🔵' },
+        { name: 'Elementary',    min: 1000, max: 1500, icon: '🟢' },
+        { name: 'Bronze',        min: 1500, max: 2000, icon: '🥉' },
+        { name: 'Silver',        min: 2000, max: 2500, icon: '🥈' },
+        { name: 'Gold',          min: 2500, max: 3000, icon: '🥇' },
+        { name: 'Platinum',      min: 3000, max: 3500, icon: '🪙' },
+        { name: 'Diamond',       min: 3500, max: 4000, icon: '💎' },
+        { name: 'Ace',           min: 4000, max: 4500, icon: '🌟' },
+        { name: 'Conqueror',     min: 4500, max: 5000, icon: '👑' },
+        { name: 'God of the Game', min: 5000, max: Infinity, icon: '🔱' },
+    ];
+
+    function getTier(pts) {
+        for (let i = TIERS.length - 1; i >= 0; i--) {
+            if (pts >= TIERS[i].min) return TIERS[i];
+        }
+        return TIERS[0];
+    }
+
     let board = null;
     let game = new Chess();
     let whiteSquareGrey = '#a9a9a9';
     let blackSquareGrey = '#696969';
-    
-    // Config: Player configuration
+
+    // Player rank points (loaded from localStorage)
+    let userRankPoints = 0;
     let playerSide = 'w';
-    let playerElo = 1200;
-    let opponentElo = 1650;
     
     // Scoring System
     // Pawn = 1, Knight = 3, Bishop = 3, Rook = 5, Queen = 9
@@ -433,26 +454,116 @@
     
     function makeBotMove() {
         if (game.game_over()) return;
-        
+
         let possibleMoves = game.moves({ verbose: true });
         if (possibleMoves.length === 0) return;
-        
-        // Basic AI: Randomize moves, but highly prioritize captures
-        let captureMoves = possibleMoves.filter(m => m.captured);
+
+        const tier = getTier(userRankPoints);
+        const tierIdx = TIERS.findIndex(t => t.name === tier.name);
+        // tierIdx 0=Unranked ... 10=God of the Game
+
         let moveObj;
-        
-        if(captureMoves.length > 0 && Math.random() > 0.2) {
-            // Find most valuable capture
-            captureMoves.sort((a,b) => pieceValues[b.captured] - pieceValues[a.captured]);
-            moveObj = captureMoves[0];
+
+        if (tierIdx === 0) {
+            // Unranked: fully random
+            moveObj = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+
+        } else if (tierIdx === 1) {
+            // Beginner: 30% chance to take a capture
+            const caps = possibleMoves.filter(m => m.captured);
+            if (caps.length > 0 && Math.random() > 0.7) {
+                moveObj = caps[Math.floor(Math.random() * caps.length)];
+            } else {
+                moveObj = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+            }
+
+        } else if (tierIdx === 2) {
+            // Elementary: always take best capture if available (60%), else random
+            const caps = possibleMoves.filter(m => m.captured);
+            if (caps.length > 0 && Math.random() > 0.4) {
+                caps.sort((a, b) => pieceValues[b.captured] - pieceValues[a.captured]);
+                moveObj = caps[0];
+            } else {
+                moveObj = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+            }
+
+        } else if (tierIdx === 3) {
+            // Bronze: always best capture (80%), else prefer center
+            const caps = possibleMoves.filter(m => m.captured);
+            if (caps.length > 0 && Math.random() > 0.2) {
+                caps.sort((a, b) => pieceValues[b.captured] - pieceValues[a.captured]);
+                moveObj = caps[0];
+            } else {
+                const center = ['d4','d5','e4','e5'];
+                const centerMoves = possibleMoves.filter(m => center.includes(m.to));
+                moveObj = centerMoves.length > 0 ? centerMoves[0] : possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+            }
+
+        } else if (tierIdx <= 5) {
+            // Silver / Gold: best capture always + simple positional score
+            const caps = possibleMoves.filter(m => m.captured);
+            if (caps.length > 0) {
+                caps.sort((a, b) => pieceValues[b.captured] - pieceValues[a.captured]);
+                moveObj = caps[0];
+            } else {
+                // Score moves by piece development + center control
+                moveObj = scoredRandomMove(possibleMoves, 0.5);
+            }
+
+        } else if (tierIdx <= 7) {
+            // Platinum / Diamond: greedy best capture + avoid hanging pieces
+            const safeMoves = possibleMoves.filter(m => !isHanging(m));
+            const moveset = safeMoves.length > 0 ? safeMoves : possibleMoves;
+            const caps = moveset.filter(m => m.captured);
+            if (caps.length > 0) {
+                caps.sort((a, b) => pieceValues[b.captured] - pieceValues[a.captured]);
+                moveObj = caps[0];
+            } else {
+                moveObj = scoredRandomMove(moveset, 0.8);
+            }
+
         } else {
-            let randomIdx = Math.floor(Math.random() * possibleMoves.length);
-            moveObj = possibleMoves[randomIdx];
+            // Ace / Conqueror / God: near-optimal — best capture, never hangs pieces, prefers checks
+            const safeMoves = possibleMoves.filter(m => !isHanging(m));
+            const moveset = safeMoves.length > 0 ? safeMoves : possibleMoves;
+            const checkMoves = moveset.filter(m => { const r = game.move(m); const inChk = game.in_check(); game.undo(); return r && inChk; });
+            const caps = moveset.filter(m => m.captured);
+            if (caps.length > 0) {
+                caps.sort((a, b) => pieceValues[b.captured] - pieceValues[a.captured]);
+                moveObj = caps[0];
+            } else if (checkMoves.length > 0) {
+                moveObj = checkMoves[0];
+            } else {
+                moveObj = scoredRandomMove(moveset, 1.0);
+            }
         }
-        
+
         let move = game.move(moveObj);
         board.position(game.fen());
         handleMoveResult(move);
+    }
+
+    // Give moves a positional score and pick one weighted by score
+    function scoredRandomMove(moves, weight) {
+        if (moves.length === 0) return null;
+        const center = { d4:2, d5:2, e4:2, e5:2, c3:1, f3:1, c6:1, f6:1 };
+        const scored = moves.map(m => ({ m, s: (center[m.to] || 0) * weight }));
+        const total = scored.reduce((s, x) => s + x.s + 0.1, 0);
+        let r = Math.random() * total;
+        for (const { m, s } of scored) {
+            r -= s + 0.1;
+            if (r <= 0) return m;
+        }
+        return moves[0];
+    }
+
+    // Rough check: would moving there leave the piece attacked?
+    function isHanging(moveObj) {
+        const result = game.move(moveObj);
+        if (!result) return false;
+        const attacked = game.moves({ verbose: true }).some(m => m.to === moveObj.to);
+        game.undo();
+        return attacked;
     }
     
     function formatIcon(piece, color) {
@@ -541,53 +652,49 @@
       }
     }
     
-    // Resolves ending ELO and Shows Modal
+    // ───── Point-based endgame resolution ─────
     function endGame(reason, result) {
         clearInterval(timerInterval);
-        
+
         let won = false;
-        let isDraw = (result === "draw");
-        
+        const isDraw = (result === 'draw');
         if (!isDraw && result === 'white' && playerSide === 'w') won = true;
         if (!isDraw && result === 'black' && playerSide === 'b') won = true;
 
-        let diff = playerPoints - opponentPoints; // can be negative
-        let eloChange = 0;
-        let finalTitle = "";
-        let finalDesc = "";
+        let pointsGained = 0;
+        let finalTitle = '';
+        let finalDesc = '';
 
-        if(isDraw) {
-            // Draw depends purely on score diff
-            eloChange = diff; 
-            finalTitle = "Stalemate / Draw!";
-            finalDesc = `Match ended in a draw. ELO Adjusted by ${eloChange > 0 ? '+'+eloChange : eloChange} from captured piece difference.`;
+        if (isDraw) {
+            pointsGained = 0;
+            finalTitle = 'Draw!';
+            finalDesc = 'Match ended in a draw. No points awarded.';
         } else if (won) {
-            eloChange = 25 + diff; // Base 25 + difference
-            if(eloChange < 5) eloChange = 5; // Minimum win points
-            finalTitle = "Victory!";
-            finalDesc = `Checkmate! You won +${eloChange} ELO (${diff > 0 ? '+'+diff+' points diff' : diff+' points diff'}).`;
+            pointsGained = 100;
+            finalTitle = 'Victory! 🎉';
+            finalDesc = `You won! +100 Points added to your rank.`;
         } else {
-            eloChange = -25 + diff; // Base -25 + difference
-            if(eloChange > -5) eloChange = -5; // Minimum loss points
-            finalTitle = "Defeat!";
-            finalDesc = `You were checkmated. You lost ${Math.abs(eloChange)} ELO (${diff > 0 ? '+'+diff+' points diff' : diff+' points diff'}).`;
+            pointsGained = 0;
+            finalTitle = 'Defeat 😞';
+            finalDesc = 'You lost. No points deducted — keep practicing!';
         }
-        
-        playerElo += eloChange;
-        $('#playerElo').text(playerElo);
-        
-        // Save back to local storage
-        localStorage.setItem('userElo', playerElo);
+
+        userRankPoints += pointsGained;
+        localStorage.setItem('userPoints', userRankPoints);
+
+        // Show updated rank
+        const newTier = getTier(userRankPoints);
+        const tierMsg = pointsGained > 0 ? ` Rank: ${newTier.icon} ${newTier.name} (${userRankPoints} pts)` : '';
+        $('#playerElo').text(`${userRankPoints} pts`);
 
         $('#modalTitle').text(finalTitle);
-        $('#modalDesc').text(finalDesc);
+        $('#modalDesc').text(finalDesc + tierMsg);
         $('#gameOverModal').addClass('active');
     }
 
     function quitMatch() {
-        if(confirm("Are you sure you want to forfeit? You will lose ELO.")) {
-            // Treat as auto loss
-            endGame("Forfeit", playerSide === 'w' ? 'black' : 'white');
+        if (confirm('Are you sure you want to forfeit? (No points will be awarded)')) {
+            endGame('Forfeit', playerSide === 'w' ? 'black' : 'white');
         }
     }
 
@@ -607,24 +714,32 @@
     }
 
     function initializeSystem() {
-        // Attempt to load player data from local storage
-        let storedUser = localStorage.getItem('currentUser');
-        if(storedUser) {
-            $('#playerName').text(storedUser);
-        } else {
-            $('#playerName').text("Guest Player");
-        }
-        
-        let storedElo = localStorage.getItem('userElo');
-        if(!storedElo) {
-            // Give 1200 as base
-            localStorage.setItem('userElo', 1200);
-            storedElo = 1200;
-        }
-        playerElo = parseInt(storedElo);
-        $('#playerElo').text(playerElo);
-        
-        // Instatiate Board
+        // Load player name
+        const storedUser = localStorage.getItem('currentUser') || 'Guest Player';
+        $('#playerName').text(storedUser);
+
+        // Load rank points (new system: userPoints)
+        const storedPts = localStorage.getItem('userPoints');
+        userRankPoints = storedPts !== null ? parseInt(storedPts) : 0;
+        const tier = getTier(userRankPoints);
+        $('#playerElo').text(`${userRankPoints} pts`);
+
+        // Show opponent difficulty label based on tier
+        const tierIdx = TIERS.findIndex(t => t.name === tier.name);
+        const opponentNames = [
+            'Random Bot', 'Casual Bot', 'Club Bot', 'Amateur Bot',
+            'Skilled Bot', 'Expert Bot', 'Master Bot', 'Grandmaster Bot',
+            'Elite Bot', 'Champion Bot', 'Mythic Bot'
+        ];
+        const opponentEloLabels = [
+            '~400', '~600', '~900', '~1100',
+            '~1300', '~1500', '~1700', '~1900',
+            '~2100', '~2300', '~2500+'
+        ];
+        $('#opponentName').text(opponentNames[tierIdx] || 'Grandmaster Bot');
+        $('#opponentElo').text(opponentEloLabels[tierIdx] || '2000');
+
+        // Instantiate Board
         var config = {
             draggable: true,
             position: 'start',
@@ -636,10 +751,8 @@
             pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
         };
         board = Chessboard('myBoard', config);
-        
-        // Auto resize handle
+
         $(window).resize(board.resize);
-        
         startTimer();
     }
 

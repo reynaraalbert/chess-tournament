@@ -77,38 +77,56 @@ document.addEventListener('click', () => {
 });
 
 // ───────────── Stats Modal ─────────────
+// ───────────── Tier System ─────────────
+const TIERS = [
+    { key: 'unranked',   name: 'Unranked',          icon: '⬜', min: 0    },
+    { key: 'beginner',   name: 'Beginner',           icon: '🔵', min: 300  },
+    { key: 'elementary', name: 'Elementary',         icon: '🟢', min: 1000 },
+    { key: 'bronze',     name: 'Bronze',             icon: '🥉', min: 1500 },
+    { key: 'silver',     name: 'Silver',             icon: '🥈', min: 2000 },
+    { key: 'gold',       name: 'Gold',               icon: '🥇', min: 2500 },
+    { key: 'platinum',   name: 'Platinum',           icon: '🪙', min: 3000 },
+    { key: 'diamond',    name: 'Diamond',            icon: '💎', min: 3500 },
+    { key: 'ace',        name: 'Ace',                icon: '🌟', min: 4000 },
+    { key: 'conqueror',  name: 'Conqueror',          icon: '👑', min: 4500 },
+    { key: 'god',        name: 'God of the Game',    icon: '🔱', min: 5000 },
+];
+
+function getTier(pts) {
+    for (let i = TIERS.length - 1; i >= 0; i--) {
+        if (pts >= TIERS[i].min) return TIERS[i];
+    }
+    return TIERS[0];
+}
+
+// ───────────── Stats Modal ─────────────
 function showStats() {
     document.getElementById('optionsDropdown').classList.remove('open');
 
     const username = localStorage.getItem('currentUser') || 'Unknown';
-    const eloRaw = localStorage.getItem('userElo');  // null if never played
+    const ptsRaw = localStorage.getItem('userPoints');  // null if never played
     const registeredRaw = localStorage.getItem('registeredTournaments');
     const registered = registeredRaw ? JSON.parse(registeredRaw) : [];
 
-    // Determine rank tier — only after at least 1 match (userElo exists)
-    let rank = '⬜ Unranked';
-    let eloDisplay = '—';
-    let activeTier = 'unranked';
+    let ptsDisplay = '—';
+    let rankDisplay = '⬜ Unranked';
+    let activeTierKey = 'unranked';
 
-    if (eloRaw !== null) {
-        const elo = parseInt(eloRaw);
-        eloDisplay = `${elo} ELO`;
-        if (elo >= 1500)      { rank = '💎 Diamond';  activeTier = 'diamond'; }
-        else if (elo >= 1300) { rank = '🥇 Gold';     activeTier = 'gold'; }
-        else if (elo >= 1150) { rank = '🥈 Silver';   activeTier = 'silver'; }
-        else if (elo >= 1000) { rank = '🥉 Bronze';   activeTier = 'bronze'; }
-        else                  { rank = '🔵 Beginner'; activeTier = 'beginner'; }
+    if (ptsRaw !== null) {
+        const pts = parseInt(ptsRaw);
+        const tier = getTier(pts);
+        ptsDisplay = `${pts} pts`;
+        rankDisplay = `${tier.icon} ${tier.name}`;
+        activeTierKey = tier.key;
     }
 
     document.getElementById('statUsername').textContent = username;
-    document.getElementById('statElo').textContent = eloDisplay;
-    document.getElementById('statRank').textContent = rank;
+    document.getElementById('statElo').textContent = ptsDisplay;
+    document.getElementById('statRank').textContent = rankDisplay;
     document.getElementById('statTournaments').textContent = registered.length;
 
-    // Highlight active tier in the progression chart
-    document.querySelectorAll('.tier-item').forEach(item => {
-        item.classList.toggle('active', item.dataset.tier === activeTier);
-    });
+    // Highlight active tier in tier cards (dashboard section)
+    highlightTierCards(activeTierKey);
 
     openModal('statsModal');
 }
@@ -205,21 +223,18 @@ document.addEventListener('DOMContentLoaded', () => {
     setGreeting(currentUser);
     setupActionButtons();
 
-    // Highlight the active tier card in the ELO section
-    const eloRaw = localStorage.getItem('userElo');
-    let activeTier = 'unranked';
-    if (eloRaw !== null) {
-        const elo = parseInt(eloRaw);
-        if (elo >= 1500)      activeTier = 'diamond';
-        else if (elo >= 1300) activeTier = 'gold';
-        else if (elo >= 1150) activeTier = 'silver';
-        else if (elo >= 1000) activeTier = 'bronze';
-        else                  activeTier = 'beginner';
-    }
-    document.querySelectorAll('.tier-card').forEach(card => {
-        card.classList.toggle('active', card.dataset.tier === activeTier);
-    });
+    // Highlight active tier card on dashboard load
+    const ptsRaw = localStorage.getItem('userPoints');
+    const pts = ptsRaw !== null ? parseInt(ptsRaw) : 0;
+    highlightTierCards(getTier(pts).key);
 });
+
+// Shared helper: highlight the given tier key in the dashboard grid
+function highlightTierCards(tierKey) {
+    document.querySelectorAll('.tier-card').forEach(card => {
+        card.classList.toggle('active', card.dataset.tier === tierKey);
+    });
+}
 
 // Terminate Session  
 function logout() {
