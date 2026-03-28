@@ -13,6 +13,24 @@ function showToast(message, type = 'info') {
     }, 3200);
 }
 
+// ───────────── Dynamic Animation Helpers ─────────────
+function animateValue(id, start, end, duration, isDecimal = false) {
+    const obj = document.getElementById(id);
+    if (!obj) return;
+    
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const current = progress * (end - start) + start;
+        obj.innerHTML = isDecimal ? current.toFixed(1) : Math.floor(current);
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
 function getTimeGreeting() {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
@@ -117,19 +135,22 @@ function showStats() {
     if (ptsRaw !== null) {
         const pts = parseInt(ptsRaw);
         const tier = getTier(pts);
-        ptsDisplay = `${pts} pts`;
+        // ptsDisplay handled by animation
         rankDisplay = `${tier.icon} ${tier.name}`;
         activeTierKey = tier.key;
+
+        setTimeout(() => {
+            animateValue('statElo', 0, pts, 800);
+        }, 300);
     }
 
-    if (ethRaw !== null) {
-        ethDisplay = `${parseFloat(ethRaw).toFixed(1)} ETH`;
-    }
+    const eth = parseFloat(ethRaw || '0');
+    setTimeout(() => {
+        animateValue('statEth', 0, eth, 800, true);
+    }, 500);
 
     document.getElementById('statUsername').textContent = username;
-    document.getElementById('statElo').textContent = ptsDisplay;
     document.getElementById('statRank').textContent = rankDisplay;
-    document.getElementById('statEth').textContent = ethDisplay;
     document.getElementById('statTournaments').textContent = registered.length;
 
     highlightTierCards(activeTierKey);
@@ -246,11 +267,20 @@ function switchShopTab(tab) {
     renderShopItems();
 }
 
-function updateNavbarEth() {
+function updateNavbarEth(animate = false) {
     const navEth = document.getElementById('navEthBalance');
     if (navEth) {
         const eth = parseFloat(localStorage.getItem('userEth') || '0');
-        navEth.querySelector('span').textContent = eth.toFixed(1);
+        const span = navEth.querySelector('span');
+        const oldVal = parseFloat(span.textContent);
+        
+        if (animate && oldVal !== eth) {
+            animateValue('navEthBalanceSpan', oldVal, eth, 600, true);
+            navEth.classList.add('pulse-gold');
+            setTimeout(() => navEth.classList.remove('pulse-gold'), 1000);
+        } else {
+            span.textContent = eth.toFixed(1);
+        }
     }
 }
 
@@ -351,6 +381,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateNavbarEth(); // Initial navbar sync
+
+    // Real-time tab sync
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'userEth') {
+            updateNavbarEth(true);
+        }
+    });
 
     // Highlight active tier card on dashboard load
     const ptsRaw = localStorage.getItem('userPoints');

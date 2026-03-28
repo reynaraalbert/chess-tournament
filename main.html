@@ -22,7 +22,7 @@
         <div class="nav-user">
             <!-- ETH Balance in Navbar -->
             <div class="nav-eth" id="navEthBalance" onclick="openShop()">
-                <i class="fa-brands fa-ethereum"></i> <span>0.0</span>
+                <i class="fa-brands fa-ethereum"></i> <span id="navEthBalanceSpan">0.0</span>
             </div>
             
             <span id="welcomeText" class="welcome-text">Welcome, Player</span>
@@ -170,8 +170,8 @@
                 <span class="stat-value" id="statUsername">—</span>
             </div>
             <div class="stat-row">
-                <span class="stat-label"><i class="fa-solid fa-star"></i> ELO Rating</span>
-                <span class="stat-value" id="statElo">—</span>
+                <span class="stat-label"><i class="fa-solid fa-star"></i> Rank Points</span>
+                <span class="stat-value"><span id="statElo">0</span> pts</span>
             </div>
             <div class="stat-row">
                 <span class="stat-label"><i class="fa-solid fa-ranking-star"></i> Rank Tier</span>
@@ -179,7 +179,7 @@
             </div>
             <div class="stat-row">
                 <span class="stat-label"><i class="fa-brands fa-ethereum"></i> ETH Balance</span>
-                <span class="stat-value" id="statEth" style="color:#f7931a;">0.0 ETH</span>
+                <span class="stat-value" style="color:#f7931a;"><span id="statEth">0.0</span> ETH</span>
             </div>
             <div class="stat-row">
                 <span class="stat-label"><i class="fa-solid fa-trophy"></i> Registered Tournaments</span>
