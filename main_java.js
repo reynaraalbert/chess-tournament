@@ -307,8 +307,8 @@ function renderShopItems() {
         card.className = `shop-item ${isEquipped ? 'equipped' : ''}`;
         
         const previewHtml = item.img 
-            ? `<img src="${item.img}" style="width:100%; height:100%; object-fit:cover;">` 
-            : `<div class="item-preview-board"><div></div><div style="opacity:0.5"></div><div style="opacity:0.5"></div><div></div></div>`;
+            ? `<img src="${item.img}" style="width:100%; height:100%; object-fit:cover;" onclick="previewItem('${activeShopTab}', '${item.id}')">` 
+            : `<div class="item-preview-board" onclick="previewItem('${activeShopTab}', '${item.id}')"><div></div><div style="opacity:0.5"></div><div style="opacity:0.5"></div><div></div></div>`;
 
         card.innerHTML = `
             <div class="item-preview">
@@ -325,6 +325,29 @@ function renderShopItems() {
         `;
         container.appendChild(card);
     });
+}
+
+function previewItem(category, id) {
+    const item = SHOP_ITEMS[category].find(i => i.id === id);
+    if (!item) return;
+
+    const owned = JSON.parse(localStorage.getItem('ownedSkins') || '["default", "wikipedia"]');
+    const equippedBoard = localStorage.getItem('equippedBoard') || 'default';
+    const equippedPieces = localStorage.getItem('equippedPieces') || 'wikipedia';
+    
+    const isOwned = owned.includes(id);
+    const isEquipped = (category === 'boards' && equippedBoard === id) || 
+                       (category === 'pieces' && equippedPieces === id);
+
+    document.getElementById('previewName').textContent = item.name;
+    document.getElementById('previewImageContainer').innerHTML = `<img src="${item.img || ''}" alt="${item.name}">`;
+    
+    const actionsEl = document.getElementById('previewActions');
+    actionsEl.innerHTML = isOwned 
+        ? `<button class="action-btn ${isEquipped ? 'equipped' : 'equip'}" onclick="equipItem('${category}', '${id}'); closeModal('shopPreviewModal');">${isEquipped ? 'Equipped' : 'Equip Now'}</button>`
+        : `<button class="action-btn buy" onclick="buyItem('${category}', '${id}', ${item.price}); closeModal('shopPreviewModal');">Buy for ${item.price} ETH</button>`;
+
+    openModal('shopPreviewModal');
 }
 
 function buyItem(category, id, price) {
