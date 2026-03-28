@@ -942,17 +942,17 @@ body {
 .board-default .white-1e1d7 { background-color: #f0d9b5 !important; }
 .board-default .black-3c85d { background-color: #b58863 !important; }
 
-.board-ocean .white-1e1d7 { background-color: #eaecf0 !important; }
-.board-ocean .black-3c85d { background-color: #568ec5 !important; }
+.board-ocean .white-1e1d7 { background: linear-gradient(135deg, #eaecf0 0%, #d1d9e6 100%) !important; box-shadow: inset 0 0 5px rgba(0,0,0,0.05); }
+.board-ocean .black-3c85d { background: linear-gradient(135deg, #568ec5 0%, #3a6b9a 100%) !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.2); }
 
-.board-forest .white-1e1d7 { background-color: #f4f6f3 !important; }
-.board-forest .black-3c85d { background-color: #63855e !important; }
+.board-forest .white-1e1d7 { background: linear-gradient(135deg, #f4f6f3 0%, #e1e7e0 100%) !important; box-shadow: inset 0 0 5px rgba(0,0,0,0.05); }
+.board-forest .black-3c85d { background: linear-gradient(135deg, #63855e 0%, #4a6646 100%) !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.2); }
 
-.board-dark .white-1e1d7 { background-color: #444 !important; }
-.board-dark .black-3c85d { background-color: #222 !important; }
+.board-dark .white-1e1d7 { background: linear-gradient(135deg, #444 0%, #333 100%) !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
+.board-dark .black-3c85d { background: linear-gradient(135deg, #222 0%, #111 100%) !important; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); }
 
-.board-purple .white-1e1d7 { background-color: #efefef !important; }
-.board-purple .black-3c85d { background-color: #8a4ba1 !important; }
+.board-purple .white-1e1d7 { background: linear-gradient(135deg, #efefef 0%, #ddd 100%) !important; }
+.board-purple .black-3c85d { background: linear-gradient(135deg, #8a4ba1 0%, #632f7a 100%) !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.2); }
 
 /* Standard Boards */
 .board-red .white-1e1d7 { background-color: #ffffff !important; }
