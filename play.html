@@ -127,6 +127,17 @@
       border-color: #f7931a;
     }
 
+    @media (prefers-color-scheme: light) {
+      .time-values { text-shadow: none; }
+      .theme-modal { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+      .profile-card .elo { background: rgba(255, 255, 255, 0.5); }
+      .profile-card h3 { 
+        background: linear-gradient(to right, #3a7bd5, #00d2ff); 
+        -webkit-background-clip: text;
+        background-clip: text;
+      }
+    }
+
     .score-keeper {
       display: flex;
       flex-direction: column;
