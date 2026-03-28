@@ -104,13 +104,15 @@ function showStats() {
     document.getElementById('optionsDropdown').classList.remove('open');
 
     const username = localStorage.getItem('currentUser') || 'Unknown';
-    const ptsRaw = localStorage.getItem('userPoints');  // null if never played
+    const ptsRaw = localStorage.getItem('userPoints');
+    const ethRaw = localStorage.getItem('userEth');
     const registeredRaw = localStorage.getItem('registeredTournaments');
     const registered = registeredRaw ? JSON.parse(registeredRaw) : [];
 
     let ptsDisplay = '—';
     let rankDisplay = '⬜ Unranked';
     let activeTierKey = 'unranked';
+    let ethDisplay = '0.0 ETH';
 
     if (ptsRaw !== null) {
         const pts = parseInt(ptsRaw);
@@ -120,14 +122,17 @@ function showStats() {
         activeTierKey = tier.key;
     }
 
+    if (ethRaw !== null) {
+        ethDisplay = `${parseFloat(ethRaw).toFixed(1)} ETH`;
+    }
+
     document.getElementById('statUsername').textContent = username;
     document.getElementById('statElo').textContent = ptsDisplay;
     document.getElementById('statRank').textContent = rankDisplay;
+    document.getElementById('statEth').textContent = ethDisplay;
     document.getElementById('statTournaments').textContent = registered.length;
 
-    // Highlight active tier in tier cards (dashboard section)
     highlightTierCards(activeTierKey);
-
     openModal('statsModal');
 }
 
@@ -209,6 +214,106 @@ document.addEventListener('change', (e) => {
     }
 });
 
+// ───────────── Customization Shop Logic ─────────────
+const SHOP_ITEMS = {
+    boards: [
+        { id: 'default', name: 'Classic Wood', price: 0, class: 'board-default' },
+        { id: 'ocean',   name: 'Ocean Blue',   price: 2.0, class: 'board-ocean' },
+        { id: 'forest',  name: 'Forest Green', price: 2.5, class: 'board-forest' },
+        { id: 'dark',    name: 'Midnight',     price: 3.5, class: 'board-dark' },
+        { id: 'purple',  name: 'Royal Purple', price: 4.0, class: 'board-purple' },
+    ],
+    pieces: [
+        { id: 'wikipedia', name: 'Standard (Wiki)', price: 0 },
+        { id: 'alpha',     name: 'Alpha Style',    price: 3.0 },
+        { id: 'cburnett',  name: 'Classic C.B.',    price: 3.5 },
+        { id: 'neo',       name: 'Modern Neo',     price: 5.0 },
+    ]
+};
+
+let activeShopTab = 'boards';
+
+function openShop() {
+    renderShopItems();
+    openModal('shopModal');
+}
+
+function switchShopTab(tab) {
+    activeShopTab = tab;
+    document.querySelectorAll('.shop-tab').forEach(t => {
+        t.classList.toggle('active', t.textContent.toLowerCase().includes(tab));
+    });
+    renderShopItems();
+}
+
+function renderShopItems() {
+    const container = document.getElementById('shopContent');
+    const balanceEl = document.getElementById('shopEthBalance');
+    
+    let eth = parseFloat(localStorage.getItem('userEth') || '0');
+    balanceEl.textContent = eth.toFixed(1);
+
+    const owned = JSON.parse(localStorage.getItem('ownedSkins') || '["default", "wikipedia"]');
+    const equippedBoard = localStorage.getItem('equippedBoard') || 'default';
+    const equippedPieces = localStorage.getItem('equippedPieces') || 'wikipedia';
+
+    container.innerHTML = '';
+    
+    SHOP_ITEMS[activeShopTab].forEach(item => {
+        const isOwned = owned.includes(item.id);
+        const isEquipped = (activeShopTab === 'boards' && equippedBoard === item.id) || 
+                           (activeShopTab === 'pieces' && equippedPieces === item.id);
+        
+        const card = document.createElement('div');
+        card.className = `shop-item ${isEquipped ? 'equipped' : ''}`;
+        
+        card.innerHTML = `
+            <div class="item-preview ${activeShopTab === 'boards' ? item.class : ''}">
+                ${activeShopTab === 'boards' ? '<div class="item-preview-board"><div></div><div style="opacity:0.5"></div><div style="opacity:0.5"></div><div></div></div>' : `<img src="https://chessboardjs.com/img/chesspieces/wikipedia/wN.png" style="filter: ${item.id === 'default' ? 'none' : 'hue-rotate(150deg)'}; width: 60px;">`}
+            </div>
+            <div class="item-name">${item.name}</div>
+            <div class="item-footer">
+                <div class="item-price">${isOwned ? 'Owned' : `<i class="fa-brands fa-ethereum"></i> ${item.price.toFixed(1)}`}</div>
+                ${isOwned 
+                    ? `<button class="item-btn ${isEquipped ? 'equipped' : 'equip'}" onclick="equipItem('${activeShopTab}', '${item.id}')">${isEquipped ? 'Equipped' : 'Equip'}</button>`
+                    : `<button class="item-btn buy" onclick="buyItem('${activeShopTab}', '${item.id}', ${item.price})">Buy</button>`
+                }
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function buyItem(category, id, price) {
+    let eth = parseFloat(localStorage.getItem('userEth') || '0');
+    if (eth < price) {
+        showToast('Insufficient ETH balance!', 'error');
+        return;
+    }
+
+    if (confirm(`Buy ${id} for ${price} ETH?`)) {
+        eth -= price;
+        localStorage.setItem('userEth', eth.toString());
+        
+        const owned = JSON.parse(localStorage.getItem('ownedSkins') || '["default", "wikipedia"]');
+        owned.push(id);
+        localStorage.setItem('ownedSkins', JSON.stringify(owned));
+        
+        showToast('Purchase successful!', 'success');
+        renderShopItems();
+    }
+}
+
+function equipItem(category, id) {
+    if (category === 'boards') {
+        localStorage.setItem('equippedBoard', id);
+    } else {
+        localStorage.setItem('equippedPieces', id);
+    }
+    showToast('Item equipped!', 'success');
+    renderShopItems();
+}
+
 // ───────────── Session & Init ─────────────
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = localStorage.getItem('currentUser');
@@ -222,6 +327,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (welcome) welcome.textContent = `Welcome, ${currentUser}`;
     setGreeting(currentUser);
     setupActionButtons();
+
+    // Initialize ETH and Skins if not present
+    if (localStorage.getItem('userEth') === null) {
+        localStorage.setItem('userEth', '0.0');
+    }
+    if (localStorage.getItem('ownedSkins') === null) {
+        localStorage.setItem('ownedSkins', JSON.stringify(['default', 'wikipedia']));
+    }
 
     // Highlight active tier card on dashboard load
     const ptsRaw = localStorage.getItem('userPoints');

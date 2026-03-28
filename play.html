@@ -652,7 +652,7 @@
       }
     }
     
-    // ───── Point-based endgame resolution ─────
+    // ───── Point & ETH based endgame resolution ─────
     function endGame(reason, result) {
         clearInterval(timerInterval);
 
@@ -662,8 +662,10 @@
         if (!isDraw && result === 'black' && playerSide === 'b') won = true;
 
         let pointsGained = 0;
+        let ethGained = 0;
         let finalTitle = '';
         let finalDesc = '';
+        let bonusMsg = '';
 
         if (isDraw) {
             pointsGained = 0;
@@ -671,24 +673,38 @@
             finalDesc = 'Match ended in a draw. No points awarded.';
         } else if (won) {
             pointsGained = 100;
+            ethGained += 0.5; // Win Reward
             finalTitle = 'Victory! 🎉';
-            finalDesc = `You won! +100 Points added to your rank.`;
+            finalDesc = `You won! +100 Points and +0.5 ETH added.`;
         } else {
             pointsGained = 0;
             finalTitle = 'Defeat 😞';
             finalDesc = 'You lost. No points deducted — keep practicing!';
         }
 
+        // Check for Rank Up bonus
+        const oldTier = getTier(userRankPoints);
         userRankPoints += pointsGained;
+        const newTier = getTier(userRankPoints);
+
+        if (newTier.name !== oldTier.name && userRankPoints > oldTier.min) {
+            ethGained += 1.5; // Rank Up Reward
+            bonusMsg = `<br><span style="color:#f7931a; font-weight:bold;">Rank Up Bonus! +1.5 ETH</span>`;
+        }
+
+        // Save progress
         localStorage.setItem('userPoints', userRankPoints);
+        let currentEth = parseFloat(localStorage.getItem('userEth') || '0');
+        localStorage.setItem('userEth', (currentEth + ethGained).toString());
 
         // Show updated rank
-        const newTier = getTier(userRankPoints);
-        const tierMsg = pointsGained > 0 ? ` Rank: ${newTier.icon} ${newTier.name} (${userRankPoints} pts)` : '';
+        const tierMsg = pointsGained > 0 ? `<br>Rank: ${newTier.icon} ${newTier.name} (${userRankPoints} pts)` : '';
+        const ethMsg = ethGained > 0 ? `<br><i class="fa-brands fa-ethereum"></i> Total Gained: ${ethGained.toFixed(1)} ETH` : '';
+        
         $('#playerElo').text(`${userRankPoints} pts`);
 
         $('#modalTitle').text(finalTitle);
-        $('#modalDesc').text(finalDesc + tierMsg);
+        $('#modalDesc').html(finalDesc + tierMsg + ethMsg + bonusMsg);
         $('#gameOverModal').addClass('active');
     }
 
@@ -739,6 +755,13 @@
         $('#opponentName').text(opponentNames[tierIdx] || 'Grandmaster Bot');
         $('#opponentElo').text(opponentEloLabels[tierIdx] || '2000');
 
+        // Apply Customization (Board & Pieces)
+        const boardSkin = localStorage.getItem('equippedBoard') || 'default';
+        const pieceSkin = localStorage.getItem('equippedPieces') || 'wikipedia';
+        
+        // Add class to container for board colors
+        $('#myBoard').addClass('board-' + boardSkin);
+
         // Instantiate Board
         var config = {
             draggable: true,
@@ -748,7 +771,7 @@
             onMouseoutSquare: onMouseoutSquare,
             onMouseoverSquare: onMouseoverSquare,
             onSnapEnd: onSnapEnd,
-            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+            pieceTheme: `https://chessboardjs.com/img/chesspieces/${pieceSkin}/{piece}.png`
         };
         board = Chessboard('myBoard', config);
 
