@@ -70,6 +70,63 @@
     .timer-w { color: #f0d9b5; }
     .timer-b { color: #b58863; }
 
+    .game-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .theme-modal {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--bg-dark);
+      border: 1px solid var(--glass-border);
+      padding: 20px;
+      border-radius: 15px;
+      z-index: 1000;
+      width: 320px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    }
+
+    .theme-modal.active { display: block; }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+
+    .theme-option {
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      padding: 5px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .theme-option:hover { background: rgba(255,255,255,0.1); }
+    .theme-option.active { border-color: var(--primary); background: rgba(0,210,255,0.1); }
+    .theme-option img { width: 100%; border-radius: 5px; }
+    .theme-option span { font-size: 10px; display: block; margin-top: 4px; }
+
+    .btn-theme {
+      background: rgba(247, 147, 26, 0.2);
+      color: #f7931a;
+      border: 1px solid rgba(247, 147, 26, 0.4);
+    }
+    
+    .btn-theme:hover {
+      background: rgba(247, 147, 26, 0.3);
+      border-color: #f7931a;
+    }
+
     .score-keeper {
       display: flex;
       flex-direction: column;
@@ -300,6 +357,9 @@
           <span style="color: var(--glass-border); font-size: 24px;">|</span>
           <span class="timer-b" id="timerBlack">10:00</span>
         </div>
+        <button class="btn btn-theme" onclick="openThemeModal()" style="margin-top:10px; padding:5px 15px; font-size:12px;">
+          <i class="fas fa-palette"></i> Theme
+        </button>
       </div>
       
       <div class="score-keeper" id="playerScoreBox">
@@ -336,14 +396,22 @@
     <div class="modal-content">
       <h2 id="modalTitle">Checkmate!</h2>
       <p id="modalDesc">You won the match! Calculated base score + capture points.</p>
-      <div class="modal-actions">
-        <button class="action-btn secondary" onclick="window.location.href='main.html'">Quit to Hub</button>
-        <button class="action-btn" onclick="rematch()">Rematch</button>
-      </div>
+          <div class="game-controls">
+            <button class="btn btn-primary" onclick="window.location.reload()"><i class="fas fa-redo"></i> New Game</button>
+            <button class="btn btn-theme" onclick="openThemeModal()"><i class="fas fa-palette"></i> Change Theme</button>
+            <button class="btn btn-danger" onclick="window.location.href='main.html'"><i class="fas fa-flag"></i> Resign</button>
+          </div>
     </div>
   </div>
 
-  <!-- Core Scripts -->
+  <!-- Theme Modal -->
+  <div class="theme-modal" id="themeModal">
+    <h3 style="margin-bottom:15px; font-size:18px;">Select Theme</h3>
+    <div class="theme-grid" id="themeSelectorGrid"></div>
+    <button class="btn btn-primary" style="width:100%;" onclick="closeThemeModal()">Done</button>
+  </div>
+
+  <!-- Board.js Scripts -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="chessboard.js"></script>
   <script src="chess.js"></script>
@@ -376,6 +444,8 @@
     let game = new Chess();
     let whiteSquareGrey = '#a9a9a9';
     let blackSquareGrey = '#696969';
+    let boardSkin = 'default';
+    let pieceSkin = 'wikipedia';
 
     // Player rank points (loaded from localStorage)
     let userRankPoints = 0;
@@ -726,7 +796,82 @@
         $('#opponentScore').text('0');
         $('#playerCaptures').html('');
         $('#opponentCaptures').html('');
-        startTimer();
+        updateStatus();
+    }
+
+    // ───── Theme Selection Logic ─────
+    function openThemeModal() {
+        renderThemeSelector();
+        document.getElementById('themeModal').classList.add('active');
+    }
+
+    function closeThemeModal() {
+        document.getElementById('themeModal').classList.remove('active');
+    }
+
+    function renderThemeSelector() {
+        const grid = document.getElementById('themeSelectorGrid');
+        const owned = JSON.parse(localStorage.getItem('ownedSkins') || '["default", "wikipedia"]');
+        const currBoard = localStorage.getItem('equippedBoard') || 'default';
+        const currPieces = localStorage.getItem('equippedPieces') || 'wikipedia';
+
+        // Predefined list of possible themes (matching SHOP_ITEMS)
+        const allBoards = [
+            {id:'default', name:'Wood'}, {id:'red', name:'Red'}, {id:'blue', name:'Blue'}, 
+            {id:'green', name:'Green'}, {id:'marble', name:'Marble'}, {id:'ocean', name:'Ocean'},
+            {id:'forest', name:'Forest'}, {id:'dark', name:'Dark'}, {id:'purple', name:'Purple'}
+        ];
+        const allPieces = [
+            {id:'wikipedia', name:'Wiki'}, {id:'alpha', name:'Alpha'}, 
+            {id:'cburnett', name:'CB'}, {id:'neo', name:'Neo'}
+        ];
+
+        grid.innerHTML = '<div style="grid-column: 1/-1; font-size:12px; margin-top:10px; opacity:0.7">Boards</div>';
+        allBoards.forEach(b => {
+            if (owned.includes(b.id)) {
+                grid.innerHTML += `<div class="theme-option ${currBoard === b.id ? 'active' : ''}" onclick="changeTheme('boards', '${b.id}')">
+                    <div style="width:30px; height:30px; margin:0 auto; background:var(--primary); border-radius:4px;" class="board-${b.id}"></div>
+                    <span>${b.name}</span>
+                </div>`;
+            }
+        });
+
+        grid.innerHTML += '<div style="grid-column: 1/-1; font-size:12px; margin-top:15px; opacity:0.7">Pieces</div>';
+        allPieces.forEach(p => {
+            if (owned.includes(p.id)) {
+                grid.innerHTML += `<div class="theme-option ${currPieces === p.id ? 'active' : ''}" onclick="changeTheme('pieces', '${p.id}')">
+                    <img src="https://chessboardjs.com/img/chesspieces/wikipedia/wN.png" style="width:25px; ${p.id !== 'wikipedia' ? 'filter:hue-rotate(150deg)' : ''}">
+                    <span>${p.name}</span>
+                </div>`;
+            }
+        });
+    }
+
+    function changeTheme(category, id) {
+        if (category === 'boards') {
+            localStorage.setItem('equippedBoard', id);
+            // Apply instantly
+            const boardEl = document.getElementById('myBoard');
+            boardEl.className = '';
+            boardEl.classList.add('board-container', 'board-' + id);
+        } else {
+            localStorage.setItem('equippedPieces', id);
+            // Pieces need a board refresh
+            pieceSkin = id;
+            const currentPosition = board.position();
+            const orientation = board.orientation();
+            board.destroy();
+            board = Chessboard('myBoard', {
+                draggable: true,
+                position: currentPosition,
+                orientation: orientation,
+                pieceTheme: `https://chessboardjs.com/img/chesspieces/${pieceSkin}/{piece}.png`,
+                onDragStart: onDragStart,
+                onDrop: onDrop,
+                onSnapEnd: onSnapEnd
+            });
+        }
+        renderThemeSelector();
     }
 
     function initializeSystem() {
@@ -756,11 +901,11 @@
         $('#opponentElo').text(opponentEloLabels[tierIdx] || '2000');
 
         // Apply Customization (Board & Pieces)
-        const boardSkin = localStorage.getItem('equippedBoard') || 'default';
-        const pieceSkin = localStorage.getItem('equippedPieces') || 'wikipedia';
+        boardSkin = localStorage.getItem('equippedBoard') || 'default';
+        pieceSkin = localStorage.getItem('equippedPieces') || 'wikipedia';
         
         // Add class to container for board colors
-        $('#myBoard').addClass('board-' + boardSkin);
+        $('#myBoard').removeClass().addClass('board-container board-' + boardSkin);
 
         // Instantiate Board
         var config = {

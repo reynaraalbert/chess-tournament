@@ -308,6 +308,9 @@ function renderShopItems() {
         const isEquipped = (activeShopTab === 'boards' && equippedBoard === item.id) || 
                            (activeShopTab === 'pieces' && equippedPieces === item.id);
         
+        const card = document.createElement('div');
+        card.className = `shop-item ${isEquipped ? 'equipped' : ''}`;
+        
         const previewHtml = item.img 
             ? `<img src="${item.img}" style="width:100%; height:100%; object-fit:cover;" onclick="previewItem('${activeShopTab}', '${item.id}')">` 
             : `<div class="item-preview-board" onclick="previewItem('${activeShopTab}', '${item.id}')"><div></div><div style="opacity:0.5"></div><div style="opacity:0.5"></div><div></div></div>`;
