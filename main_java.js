@@ -523,6 +523,12 @@ function showConfirm(options) {
 // ───── Profile Editing Logic ─────
 
 function openEditProfile() {
+    // Close other possible open modals
+    closeModal('statsModal');
+    closeModal('profileModal');
+    const dropdown = document.getElementById('optionsDropdown');
+    if (dropdown) dropdown.classList.remove('open');
+
     const username = localStorage.getItem('currentUser');
     if (!username) return;
     
