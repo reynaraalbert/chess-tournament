@@ -25,6 +25,24 @@
         </div>
         <div class="nav-user">
             <span id="welcomeText" class="welcome-text">Welcome, Player</span>
+
+            <!-- Options Dropdown -->
+            <div class="options-wrapper">
+                <button class="btn-options" id="optionsBtn" onclick="toggleOptions(event)">
+                    <i class="fa-solid fa-sliders"></i> Options
+                    <i class="fa-solid fa-chevron-down" style="font-size:11px; opacity:0.7;"></i>
+                </button>
+                <div class="options-dropdown" id="optionsDropdown">
+                    <button class="dropdown-item" onclick="showStats()">
+                        <i class="fa-solid fa-chart-bar" style="color:var(--primary);"></i> Stats
+                    </button>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item danger" onclick="deleteAccount()">
+                        <i class="fa-solid fa-trash-can"></i> Delete Account
+                    </button>
+                </div>
+            </div>
+
             <button onclick="logout()" class="btn-logout">
                 <i class="fa-solid fa-right-from-bracket"></i> Logout
             </button>
@@ -58,7 +76,7 @@
                 </div>
                 <h3>Tournaments</h3>
                 <p>Register and compete in upcoming events to win grand prizes.</p>
-                <button class="action-btn secondary">View Events</button>
+                <button class="action-btn secondary" id="tournamentBtn">Register</button>
             </div>
             
             <div class="action-card">
@@ -71,6 +89,65 @@
             </div>
         </div>
     </main>
+
+    <!-- ===== STATS MODAL ===== -->
+    <div class="modal-overlay" id="statsModal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('statsModal')">&times;</button>
+            <h2><i class="fa-solid fa-chart-bar" style="margin-right:10px;"></i>My Stats</h2>
+            <div class="stat-row">
+                <span class="stat-label"><i class="fa-solid fa-user"></i> Username</span>
+                <span class="stat-value" id="statUsername">—</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label"><i class="fa-solid fa-star"></i> ELO Rating</span>
+                <span class="stat-value" id="statElo">—</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label"><i class="fa-solid fa-ranking-star"></i> Rank Tier</span>
+                <span class="stat-value" id="statRank">—</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label"><i class="fa-solid fa-trophy"></i> Registered Tournaments</span>
+                <span class="stat-value" id="statTournaments">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOURNAMENT REGISTER MODAL ===== -->
+    <div class="modal-overlay" id="tournamentModal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('tournamentModal')">&times;</button>
+            <h2><i class="fa-solid fa-trophy" style="margin-right:10px;"></i>Join Tournament</h2>
+            <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Select a tournament to register for:</p>
+            <div class="tournament-list" id="tournamentList">
+                <label class="tournament-option">
+                    <input type="radio" name="tournament" value="Spring Open 2026">
+                    <div class="tournament-option-info">
+                        <div class="tournament-option-name">🌸 Spring Open 2026</div>
+                        <div class="tournament-option-date">April 15, 2026 · All levels</div>
+                    </div>
+                </label>
+                <label class="tournament-option">
+                    <input type="radio" name="tournament" value="Blitz Masters Cup">
+                    <div class="tournament-option-info">
+                        <div class="tournament-option-name">⚡ Blitz Masters Cup</div>
+                        <div class="tournament-option-date">May 3, 2026 · ELO 1200+</div>
+                    </div>
+                </label>
+                <label class="tournament-option">
+                    <input type="radio" name="tournament" value="Grand Chess Championship">
+                    <div class="tournament-option-info">
+                        <div class="tournament-option-name">👑 Grand Chess Championship</div>
+                        <div class="tournament-option-date">June 20, 2026 · ELO 1500+</div>
+                    </div>
+                </label>
+            </div>
+            <button class="action-btn" id="registerBtn" onclick="confirmTournamentRegister()">
+                <i class="fa-solid fa-check" style="margin-right:8px;"></i>Register Now
+            </button>
+        </div>
+    </div>
 
     <script src="main_java.js"></script>
 </body>
