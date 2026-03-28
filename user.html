@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +21,7 @@
             -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.02);
             position: relative;
             z-index: 10;
         }
@@ -52,7 +53,8 @@
             color: #fff;
         }
 
-        .users-table th, .users-table td {
+        .users-table th,
+        .users-table td {
             padding: 18px 15px;
             text-align: left;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -129,7 +131,7 @@
             background: rgba(255, 255, 255, 0.2);
             border-color: rgba(255, 255, 255, 0.4);
         }
-        
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -141,7 +143,7 @@
             margin-bottom: 20px;
             opacity: 0.5;
         }
-        
+
         .password-badge {
             background: rgba(46, 213, 115, 0.1);
             color: #2ed573;
@@ -156,6 +158,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Background styling imported from style.css -->
     <div class="bg-pattern"></div>
@@ -169,7 +172,7 @@
                 <button class="btn-action btn-clear" onclick="clearAllUsers()">
                     <i class="fa-solid fa-trash-can"></i> Clear All Users
                 </button>
-                <a href="login.html" class="btn-back">
+                <a href="index.html" class="btn-back">
                     <i class="fa-solid fa-arrow-left"></i> To Login
                 </a>
             </div>
@@ -205,11 +208,11 @@
 
         // Delete an individual user account
         function deleteUser(username) {
-            if(confirm(`Are you sure you want to delete user: "${username}"?`)) {
+            if (confirm(`Are you sure you want to delete user: "${username}"?`)) {
                 const users = getUsers();
                 delete users[username];
                 saveUsers(users);
-                
+
                 // If the deleted user happens to be logged in right now, boot them out
                 if (localStorage.getItem('currentUser') === username) {
                     localStorage.removeItem('currentUser');
@@ -219,7 +222,7 @@
 
         // Clear the entire user database
         function clearAllUsers() {
-            if(confirm('WARNING: Are you sure you want to delete ALL registered users? This action cannot be undone.')) {
+            if (confirm('WARNING: Are you sure you want to delete ALL registered users? This action cannot be undone.')) {
                 localStorage.removeItem('chessTourUsers');
                 localStorage.removeItem('currentUser');
                 renderUsers();
@@ -231,9 +234,9 @@
             const users = getUsers();
             const tbody = document.getElementById('userTableBody');
             tbody.innerHTML = '';
-            
+
             const usernames = Object.keys(users);
-            
+
             if (usernames.length === 0) {
                 tbody.innerHTML = `
                     <tr>
@@ -270,7 +273,7 @@
 
         // Simple utility to prevent script injection when rendering usernames
         function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, 
+            return str.replace(/[&<>'"]/g,
                 tag => ({
                     '&': '&amp;',
                     '<': '&lt;',
@@ -285,4 +288,5 @@
         document.addEventListener('DOMContentLoaded', renderUsers);
     </script>
 </body>
+
 </html>
