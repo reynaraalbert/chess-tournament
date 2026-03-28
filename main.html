@@ -173,8 +173,34 @@
                 <span class="stat-value" id="statRank">—</span>
             </div>
             <div class="stat-row">
+                <span class="stat-label"><i class="fa-brands fa-ethereum"></i> ETH Balance</span>
+                <span class="stat-value" id="statEth" style="color:#f7931a;">0.0 ETH</span>
+            </div>
+            <div class="stat-row">
                 <span class="stat-label"><i class="fa-solid fa-trophy"></i> Registered Tournaments</span>
                 <span class="stat-value" id="statTournaments">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SHOP MODAL ===== -->
+    <div class="modal-overlay" id="shopModal">
+        <div class="modal-box shop-modal">
+            <button class="modal-close" onclick="closeModal('shopModal')">&times;</button>
+            <div class="shop-header">
+                <h2><i class="fa-solid fa-cart-shopping"></i> Customization Shop</h2>
+                <div class="shop-balance">
+                    <i class="fa-brands fa-ethereum"></i> <span id="shopEthBalance">0.0</span> ETH
+                </div>
+            </div>
+            
+            <div class="shop-tabs">
+                <button class="shop-tab active" onclick="switchShopTab('boards')">Boards</button>
+                <button class="shop-tab" onclick="switchShopTab('pieces')">Pieces</button>
+            </div>
+
+            <div class="shop-content" id="shopContent">
+                <!-- Items will be injected by JS -->
             </div>
         </div>
     </div>
