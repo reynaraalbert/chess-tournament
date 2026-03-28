@@ -579,6 +579,84 @@ body {
   margin-top: 2px;
 }
 
+/* ELO Tier Guide */
+.tier-guide {
+  margin-top: 22px;
+  border-top: 1px solid var(--glass-border);
+  padding-top: 18px;
+}
+
+.tier-guide-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.tier-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tier-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: all 0.25s ease;
+}
+
+.tier-item.active {
+  background: rgba(0, 210, 255, 0.1);
+  border-color: rgba(0, 210, 255, 0.4);
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.1);
+}
+
+.tier-icon {
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.tier-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.tier-item.active .tier-name {
+  color: var(--primary);
+}
+
+.tier-range {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.tier-item.active .tier-range {
+  color: rgba(0, 210, 255, 0.7);
+}
+
+/* Active tier badge */
+.tier-item.active::after {
+  content: "YOU";
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--primary);
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .nav-user {

@@ -88,20 +88,27 @@ function showStats() {
     // Determine rank tier — only after at least 1 match (userElo exists)
     let rank = '⬜ Unranked';
     let eloDisplay = '—';
+    let activeTier = 'unranked';
+
     if (eloRaw !== null) {
         const elo = parseInt(eloRaw);
         eloDisplay = `${elo} ELO`;
-        if (elo >= 1500) rank = '💎 Diamond';
-        else if (elo >= 1300) rank = '🥇 Gold';
-        else if (elo >= 1150) rank = '🥈 Silver';
-        else if (elo >= 1000) rank = '🥉 Bronze';
-        else rank = '🔵 Beginner';
+        if (elo >= 1500)      { rank = '💎 Diamond';  activeTier = 'diamond'; }
+        else if (elo >= 1300) { rank = '🥇 Gold';     activeTier = 'gold'; }
+        else if (elo >= 1150) { rank = '🥈 Silver';   activeTier = 'silver'; }
+        else if (elo >= 1000) { rank = '🥉 Bronze';   activeTier = 'bronze'; }
+        else                  { rank = '🔵 Beginner'; activeTier = 'beginner'; }
     }
 
     document.getElementById('statUsername').textContent = username;
     document.getElementById('statElo').textContent = eloDisplay;
     document.getElementById('statRank').textContent = rank;
     document.getElementById('statTournaments').textContent = registered.length;
+
+    // Highlight active tier in the progression chart
+    document.querySelectorAll('.tier-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.tier === activeTier);
+    });
 
     openModal('statsModal');
 }
