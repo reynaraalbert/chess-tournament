@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chess Tour - Play Match</title>
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Chessboard CSS via Local -->
+  <link rel="stylesheet" href="chessboard.css">
+
+  <style>
+    /* Play Interface specific styles */
+    .play-layout {
+      max-width: 1300px;
+      margin: 30px auto;
+      padding: 0 5%;
+      display: grid;
+      grid-template-areas: 
+        "header header header"
+        "left center right";
+      grid-template-columns: 280px 1fr 280px;
+      gap: 30px;
+      align-items: center;
+    }
+    
+    .play-header {
+      grid-area: header;
+      background: var(--glass-bg);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 15px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .time-keeper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .time-keeper .label {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .time-values {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-light);
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    
+    .timer-w { color: #f0d9b5; }
+    .timer-b { color: #b58863; }
+
+    .score-keeper {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 18px;
+      font-weight: 600;
+      min-width: 150px;
+    }
+    
+    #opponentScoreBox { text-align: left; }
+    #playerScoreBox { text-align: right; }
+
+    .score-value {
+      font-size: 28px;
+      color: var(--primary);
+    }
+
+    .board-container {
+      grid-area: center;
+      display: flex;
+      justify-content: center;
+      position: relative;
+    }
+
+    #myBoard {
+      width: 100%;
+      max-width: 650px;
+      border-radius: 8px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 210, 255, 0.1);
+      border: 6px solid var(--bg-dark);
+      overflow: hidden;
+    }
+
+    .profile-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 40px 20px;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .profile-left { grid-area: left; }
+    .profile-right { grid-area: right; }
+
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(58, 123, 213, 0.2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+      border: 3px solid rgba(0, 210, 255, 0.5);
+      box-shadow: inset 0 0 20px rgba(0, 210, 255, 0.2), 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    .profile-card h3 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(to right, #00d2ff, #3a7bd5);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .profile-card .elo {
+      color: var(--text-light);
+      font-weight: 500;
+      font-size: 18px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 6px 15px;
+      border-radius: 20px;
+      display: inline-block;
+      border: 1px solid var(--glass-border);
+    }
+
+    .captured-pieces {
+      margin-top: 25px;
+      min-height: 40px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: center;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 20px;
+    }
+    
+    .captured-pieces i {
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .cap-w { color: #f0d9b5; }
+    .cap-b { color: #222; -webkit-text-stroke: 1px #888; }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: var(--bg-dark);
+      border: 1px solid var(--primary);
+      border-radius: 25px;
+      padding: 50px 40px;
+      text-align: center;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 210, 255, 0.15);
+      transform: translateY(50px) scale(0.9);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-content h2 {
+      font-size: 36px;
+      margin-bottom: 15px;
+      background: linear-gradient(to right, #00d2ff, #3a7bd5);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .modal-content p {
+      color: var(--text-muted);
+      margin-bottom: 35px;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    /* Target specific chessboardjs styles for dark mode tweak */
+    .white-1e1d7 { background-color: #f0d9b5; color: #b58863; }
+    .black-3c85d { background-color: #b58863; color: #f0d9b5; }
+    
+    @media (max-width: 1100px) {
+      .play-layout {
+        grid-template-areas: 
+          "header header"
+          "left right"
+          "center center";
+        grid-template-columns: 1fr 1fr;
+      }
+      .board-container {
+        margin-top: 20px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .play-layout {
+        grid-template-areas: 
+          "header"
+          "left"
+          "center"
+          "right";
+        grid-template-columns: 1fr;
+      }
+      .play-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+      #opponentScoreBox, #playerScoreBox { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Decorative Background -->
+  <div class="bg-pattern"></div>
+  <div class="circle circle-1"></div>
+  <div class="circle circle-2"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <i class="fas fa-chess-knight"></i> Chess Tour
+    </div>
+    <div class="nav-user">
+      <button class="btn-logout" onclick="quitMatch()">
+        <i class="fas fa-sign-out-alt"></i> Forfeit & Quit
+      </button>
+    </div>
+  </nav>
+
+  <!-- Play Layout -->
+  <div class="play-layout">
+    
+    <!-- Header (Score and Time) -->
+    <div class="play-header">
+      <div class="score-keeper" id="opponentScoreBox">
+        <span>Enemy Score</span>
+        <span class="score-value">+<span id="opponentScore">0</span></span>
+      </div>
+      
+      <div class="time-keeper">
+        <span class="label">Match Time</span>
+        <div class="time-values">
+          <span class="timer-w" id="timerWhite">10:00</span>
+          <span style="color: var(--glass-border); font-size: 24px;">|</span>
+          <span class="timer-b" id="timerBlack">10:00</span>
+        </div>
+      </div>
+      
+      <div class="score-keeper" id="playerScoreBox">
+        <span>Your Score</span>
+        <span class="score-value">+<span id="playerScore">0</span></span>
+      </div>
+    </div>
+
+    <!-- Opponent Profile (Left) -->
+    <div class="profile-card profile-left">
+      <div class="avatar">🤖</div>
+      <h3 id="opponentName">Grandmaster Bot</h3>
+      <div class="elo">ELO: <span id="opponentElo">1650</span></div>
+      <div class="captured-pieces" id="opponentCaptures"></div>
+    </div>
+
+    <!-- Chess Board (Center) -->
+    <div class="board-container">
+      <div id="myBoard"></div>
+    </div>
+
+    <!-- Player Profile (Right) -->
+    <div class="profile-card profile-right">
+      <div class="avatar">👤</div>
+      <h3 id="playerName">Player</h3>
+      <div class="elo">ELO: <span id="playerElo">1200</span></div>
+      <div class="captured-pieces" id="playerCaptures"></div>
+    </div>
+    
+  </div>
+
+  <!-- Game Over Modal -->
+  <div class="modal-overlay" id="gameOverModal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Checkmate!</h2>
+      <p id="modalDesc">You won the match! Calculated base score + capture points.</p>
+      <div class="modal-actions">
+        <button class="action-btn secondary" onclick="window.location.href='main.html'">Quit to Hub</button>
+        <button class="action-btn" onclick="rematch()">Rematch</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="chessboard.js"></script>
+  <script src="chess.js"></script>
+
+  <!-- Chess Rules & Game Logic -->
+  <script>
+    let board = null;
+    let game = new Chess();
+    let whiteSquareGrey = '#a9a9a9';
+    let blackSquareGrey = '#696969';
+    
+    // Config: Player configuration
+    let playerSide = 'w';
+    let playerElo = 1200;
+    let opponentElo = 1650;
+    
+    // Scoring System
+    // Pawn = 1, Knight = 3, Bishop = 3, Rook = 5, Queen = 9
+    const pieceValues = { 'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0 };
+    
+    // Font Awesome classes for pieces
+    const iconMap = {
+        'p': 'fas fa-chess-pawn',
+        'n': 'fas fa-chess-knight',
+        'b': 'fas fa-chess-bishop',
+        'r': 'fas fa-chess-rook',
+        'q': 'fas fa-chess-queen',
+        'k': 'fas fa-chess-king'
+    };
+
+    let playerPoints = 0;
+    let opponentPoints = 0;
+    
+    // Timer System
+    let whiteTime = 600; // 10 minutes
+    let blackTime = 600;
+    let timerInterval = null;
+
+    function removeGreySquares () {
+      $('#myBoard .square-55d63').css('background', '');
+    }
+
+    function greySquare (square) {
+      var $square = $('#myBoard .square-' + square)
+      var background = whiteSquareGrey
+      if ($square.hasClass('black-3c85d')) {
+        background = blackSquareGrey
+      }
+      $square.css('background', background)
+    }
+
+    function onDragStart (source, piece, position, orientation) {
+      if (game.game_over()) return false;
+
+      // Only allow moves for the active side
+      if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+          (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+        return false;
+      }
+      
+      // Allow only the player to move during their turn (w)
+      if (game.turn() !== playerSide) {
+          return false; 
+      }
+    }
+
+    function onDrop (source, target) {
+      removeGreySquares();
+
+      // Check legal move
+      let move = game.move({
+        from: source,
+        to: target,
+        promotion: 'q' // simplify promotion to Queen always
+      });
+
+      // Illegal move resets piece
+      if (move === null) return 'snapback';
+      
+      handleMoveResult(move);
+      
+      // Bot triggers after a short delay
+      if (!game.game_over()) {
+          setTimeout(makeBotMove, 600);
+      }
+    }
+    
+    function makeBotMove() {
+        if (game.game_over()) return;
+        
+        let possibleMoves = game.moves({ verbose: true });
+        if (possibleMoves.length === 0) return;
+        
+        // Basic AI: Randomize moves, but highly prioritize captures
+        let captureMoves = possibleMoves.filter(m => m.captured);
+        let moveObj;
+        
+        if(captureMoves.length > 0 && Math.random() > 0.2) {
+            // Find most valuable capture
+            captureMoves.sort((a,b) => pieceValues[b.captured] - pieceValues[a.captured]);
+            moveObj = captureMoves[0];
+        } else {
+            let randomIdx = Math.floor(Math.random() * possibleMoves.length);
+            moveObj = possibleMoves[randomIdx];
+        }
+        
+        let move = game.move(moveObj);
+        board.position(game.fen());
+        handleMoveResult(move);
+    }
+    
+    function formatIcon(piece, color) {
+        let cls = iconMap[piece];
+        let colCls = color === 'w' ? 'cap-w' : 'cap-b';
+        return `<i class="${cls} ${colCls}"></i>`;
+    }
+
+    function handleMoveResult(move) {
+        // Did anyone capture a piece?
+        if (move.captured) {
+            let pts = pieceValues[move.captured] || 0;
+            // The mover claims the captured item point
+            let capturedColor = move.color === 'w' ? 'b' : 'w';
+            let iconHtml = formatIcon(move.captured, capturedColor);
+
+            if (move.color === playerSide) {
+                playerPoints += pts;
+                $('#playerScore').text(playerPoints);
+                document.getElementById('playerCaptures').innerHTML += iconHtml;
+            } else {
+                opponentPoints += pts;
+                $('#opponentScore').text(opponentPoints);
+                document.getElementById('opponentCaptures').innerHTML += iconHtml;
+            }
+        }
+        updateStatus();
+    }
+
+    function onMouseoverSquare (square, piece) {
+      if (game.turn() !== playerSide || game.game_over()) return;
+      var moves = game.moves({ square: square, verbose: true });
+      if (moves.length === 0) return;
+
+      greySquare(square);
+      for (var i = 0; i < moves.length; i++) {
+        greySquare(moves[i].to);
+      }
+    }
+
+    function onMouseoutSquare (square, piece) {
+      removeGreySquares();
+    }
+
+    function onSnapEnd () {
+      board.position(game.fen());
+    }
+
+    function formatTime(seconds) {
+        let m = Math.floor(seconds / 60);
+        let s = seconds % 60;
+        return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    function startTimer() {
+        if(timerInterval) clearInterval(timerInterval);
+        
+        // Update initially
+        $('#timerWhite').text(formatTime(whiteTime));
+        $('#timerBlack').text(formatTime(blackTime));
+
+        timerInterval = setInterval(() => {
+            if (game.game_over()) {
+                clearInterval(timerInterval);
+                return;
+            }
+            if (game.turn() === 'w') {
+                whiteTime--;
+                $('#timerWhite').text(formatTime(whiteTime));
+                if (whiteTime <= 0) endGame("Time's Up!", "black");
+            } else {
+                blackTime--;
+                $('#timerBlack').text(formatTime(blackTime));
+                if (blackTime <= 0) endGame("Time's Up!", "white");
+            }
+        }, 1000);
+    }
+
+    function updateStatus () {
+      if (game.in_checkmate()) {
+        let winner = game.turn() === 'w' ? 'black' : 'white';
+        endGame("Checkmate!", winner);
+      }
+      else if (game.in_draw() || game.in_stalemate() || game.in_threefold_repetition()) {
+        endGame("Draw!", "draw");
+      }
+    }
+    
+    // Resolves ending ELO and Shows Modal
+    function endGame(reason, result) {
+        clearInterval(timerInterval);
+        
+        let won = false;
+        let isDraw = (result === "draw");
+        
+        if (!isDraw && result === 'white' && playerSide === 'w') won = true;
+        if (!isDraw && result === 'black' && playerSide === 'b') won = true;
+
+        let diff = playerPoints - opponentPoints; // can be negative
+        let eloChange = 0;
+        let finalTitle = "";
+        let finalDesc = "";
+
+        if(isDraw) {
+            // Draw depends purely on score diff
+            eloChange = diff; 
+            finalTitle = "Stalemate / Draw!";
+            finalDesc = `Match ended in a draw. ELO Adjusted by ${eloChange > 0 ? '+'+eloChange : eloChange} from captured piece difference.`;
+        } else if (won) {
+            eloChange = 25 + diff; // Base 25 + difference
+            if(eloChange < 5) eloChange = 5; // Minimum win points
+            finalTitle = "Victory!";
+            finalDesc = `Checkmate! You won +${eloChange} ELO (${diff > 0 ? '+'+diff+' points diff' : diff+' points diff'}).`;
+        } else {
+            eloChange = -25 + diff; // Base -25 + difference
+            if(eloChange > -5) eloChange = -5; // Minimum loss points
+            finalTitle = "Defeat!";
+            finalDesc = `You were checkmated. You lost ${Math.abs(eloChange)} ELO (${diff > 0 ? '+'+diff+' points diff' : diff+' points diff'}).`;
+        }
+        
+        playerElo += eloChange;
+        $('#playerElo').text(playerElo);
+        
+        // Save back to local storage
+        localStorage.setItem('userElo', playerElo);
+
+        $('#modalTitle').text(finalTitle);
+        $('#modalDesc').text(finalDesc);
+        $('#gameOverModal').addClass('active');
+    }
+
+    function quitMatch() {
+        if(confirm("Are you sure you want to forfeit? You will lose ELO.")) {
+            // Treat as auto loss
+            endGame("Forfeit", playerSide === 'w' ? 'black' : 'white');
+        }
+    }
+
+    function rematch() {
+        $('#gameOverModal').removeClass('active');
+        game.reset();
+        board.start();
+        whiteTime = 600;
+        blackTime = 600;
+        playerPoints = 0;
+        opponentPoints = 0;
+        $('#playerScore').text('0');
+        $('#opponentScore').text('0');
+        $('#playerCaptures').html('');
+        $('#opponentCaptures').html('');
+        startTimer();
+    }
+
+    function initializeSystem() {
+        // Attempt to load player data from local storage
+        let storedUser = localStorage.getItem('currentUser');
+        if(storedUser) {
+            $('#playerName').text(storedUser);
+        } else {
+            $('#playerName').text("Guest Player");
+        }
+        
+        let storedElo = localStorage.getItem('userElo');
+        if(!storedElo) {
+            // Give 1200 as base
+            localStorage.setItem('userElo', 1200);
+            storedElo = 1200;
+        }
+        playerElo = parseInt(storedElo);
+        $('#playerElo').text(playerElo);
+        
+        // Instatiate Board
+        var config = {
+            draggable: true,
+            position: 'start',
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onMouseoutSquare: onMouseoutSquare,
+            onMouseoverSquare: onMouseoverSquare,
+            onSnapEnd: onSnapEnd,
+            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+        };
+        board = Chessboard('myBoard', config);
+        
+        // Auto resize handle
+        $(window).resize(board.resize);
+        
+        startTimer();
+    }
+
+    // Fire setup when DOM is ready
+    $(document).ready(initializeSystem);
+
+  </script>
+</body>
+</html>

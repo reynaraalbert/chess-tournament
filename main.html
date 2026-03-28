@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Tour - Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Link to Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-pattern"></div>
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fa-solid fa-chess-knight"></i>
+            <span>Chess Tour</span>
+        </div>
+        <div class="nav-user">
+            <span id="welcomeText" class="welcome-text">Welcome, Player</span>
+            <button onclick="logout()" class="btn-logout">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Main Dashboard Application Focus -->
+    <main class="dashboard-container">
+        <header class="dashboard-header">
+            <h1 class="gradient-text"><span id="greeting">Ready for your next move?</span></h1>
+            <p id="subText">Join tournaments, track your progress, and challenge the best.</p>
+        </header>
+
+        <!-- Glassmorphism Action Cards Matrix -->
+        <div class="action-grid">
+            <div class="action-card">
+                <div class="card-icon">
+                    <i class="fa-solid fa-chess-board"></i>
+                </div>
+                <h3>Play Now</h3>
+                <p>Start a quick game or join a matchmaking queue right away.</p>
+                <button class="action-btn">Play</button>
+            </div>
+            
+            <div class="action-card">
+                <div class="card-icon">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h3>Tournaments</h3>
+                <p>Register and compete in upcoming events to win grand prizes.</p>
+                <button class="action-btn secondary">View Events</button>
+            </div>
+            
+            <div class="action-card">
+                <div class="card-icon">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <h3>Leaderboard</h3>
+                <p>Check the global rankings and see where you stand among top players.</p>
+                <button class="action-btn secondary">Rankings</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="main_java.js"></script>
+</body>
+</html>

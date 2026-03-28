@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Tour - Leaderboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Link to Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .leaderboard-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .leaderboard-container h2 {
+            font-size: 36px;
+            margin-bottom: 30px;
+            background: linear-gradient(to right, #00d2ff, #3a7bd5);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .rank-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .rank-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .rank-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .rank-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            width: 40px;
+            text-align: left;
+        }
+
+        .rank-name {
+            font-size: 18px;
+            flex-grow: 1;
+            text-align: left;
+            padding-left: 15px;
+        }
+
+        .rank-elo {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2ed573;
+        }
+
+        .rank-item.first {
+            border-color: #ffd32a;
+            box-shadow: 0 0 15px rgba(255, 211, 42, 0.2);
+            background: linear-gradient(90deg, rgba(255, 211, 42, 0.1), transparent);
+        }
+        .rank-item.first .rank-number { color: #ffd32a; }
+
+        .back-btn {
+            margin-top: 30px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-pattern"></div>
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fa-solid fa-chess-knight"></i>
+            <span>Chess Tour</span>
+        </div>
+        <div class="nav-user">
+            <button onclick="window.location.href='main.html'" class="btn-logout" style="border-color: var(--primary); color: var(--text-light); background: transparent;">
+                <i class="fa-solid fa-arrow-left"></i> Home
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-container">
+        <div class="leaderboard-container">
+            <h2>Global Rankings</h2>
+            <ul class="rank-list">
+                <li class="rank-item first">
+                    <span class="rank-number">#1</span>
+                    <span class="rank-name"><i class="fa-solid fa-crown" style="color:#ffd32a; margin-right: 8px;"></i> Grandmaster Bot</span>
+                    <span class="rank-elo">1650 ELO</span>
+                </li>
+                <li class="rank-item" id="playerRankUi" style="display: none;">
+                    <span class="rank-number" id="playerRankNum">#2</span>
+                    <span class="rank-name" id="playerRankName">Player</span>
+                    <span class="rank-elo" id="playerRankElo">1200 ELO</span>
+                </li>
+                <li class="rank-item">
+                    <span class="rank-number" id="defaultRank2">#2</span>
+                    <span class="rank-name">Kasparov_fan</span>
+                    <span class="rank-elo">1150 ELO</span>
+                </li>
+                <li class="rank-item">
+                    <span class="rank-number" id="defaultRank3">#3</span>
+                    <span class="rank-name">Novice_Knight</span>
+                    <span class="rank-elo">900 ELO</span>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentUser = localStorage.getItem('currentUser');
+            const userEloStr = localStorage.getItem('userElo');
+            
+            if (currentUser && userEloStr) {
+                const userElo = parseInt(userEloStr);
+                
+                // Show player rank UI
+                document.getElementById('playerRankUi').style.display = 'flex';
+                document.getElementById('playerRankName').textContent = currentUser;
+                document.getElementById('playerRankElo').textContent = `${userElo} ELO`;
+
+                // Set logical rankings based on ELO
+                if (userElo >= 1650) {
+                    document.getElementById('playerRankNum').textContent = '#1';
+                    // Re-number the others
+                    document.querySelector('.rank-item.first .rank-number').textContent = '#2';
+                    document.getElementById('defaultRank2').textContent = '#3';
+                    document.getElementById('defaultRank3').textContent = '#4';
+                } else if (userElo >= 1150) {
+                    document.getElementById('playerRankNum').textContent = '#2';
+                    document.getElementById('defaultRank2').textContent = '#3';
+                    document.getElementById('defaultRank3').textContent = '#4';
+                } else if (userElo >= 900) {
+                    document.getElementById('playerRankNum').textContent = '#3';
+                    document.getElementById('defaultRank3').textContent = '#4';
+                } else {
+                    document.getElementById('playerRankNum').textContent = '#4';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

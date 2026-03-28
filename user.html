@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Tour - User Directory</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Link to Dashboard Stylesheet for consistency -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            max-width: 800px;
+            margin: 60px auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.02);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .header-actions h2 {
+            font-size: 28px;
+            background: linear-gradient(to right, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            color: #fff;
+        }
+
+        .users-table th, .users-table td {
+            padding: 18px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .users-table th {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1.5px;
+        }
+
+        .users-table tbody tr {
+            transition: background 0.3s;
+        }
+
+        .users-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-action {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete {
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-delete:hover {
+            background: #ff4757;
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3);
+        }
+
+        .btn-clear {
+            background: linear-gradient(45deg, #ff4757, #ff6b81);
+            color: #fff;
+            padding: 12px 24px;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3);
+        }
+
+        .btn-clear:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.5);
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 12px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-state i {
+            display: block;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .password-badge {
+            background: rgba(46, 213, 115, 0.1);
+            color: #2ed573;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid rgba(46, 213, 115, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background styling imported from style.css -->
+    <div class="bg-pattern"></div>
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+
+    <div class="admin-container">
+        <div class="header-actions">
+            <h2><i class="fa-solid fa-users-gear"></i> User Directory</h2>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn-action btn-clear" onclick="clearAllUsers()">
+                    <i class="fa-solid fa-trash-can"></i> Clear All Users
+                </button>
+                <a href="login.html" class="btn-back">
+                    <i class="fa-solid fa-arrow-left"></i> To Login
+                </a>
+            </div>
+        </div>
+
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Password Status</th>
+                    <th>Account Access</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <!-- User rows will be populated here via JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Retrieve users from HTML Local Storage (simulated database)
+        function getUsers() {
+            const users = localStorage.getItem('chessTourUsers');
+            return users ? JSON.parse(users) : {};
+        }
+
+        // Save users back to Local Storage
+        function saveUsers(users) {
+            localStorage.setItem('chessTourUsers', JSON.stringify(users));
+            renderUsers(); // Refresh the table
+        }
+
+        // Delete an individual user account
+        function deleteUser(username) {
+            if(confirm(`Are you sure you want to delete user: "${username}"?`)) {
+                const users = getUsers();
+                delete users[username];
+                saveUsers(users);
+                
+                // If the deleted user happens to be logged in right now, boot them out
+                if (localStorage.getItem('currentUser') === username) {
+                    localStorage.removeItem('currentUser');
+                }
+            }
+        }
+
+        // Clear the entire user database
+        function clearAllUsers() {
+            if(confirm('WARNING: Are you sure you want to delete ALL registered users? This action cannot be undone.')) {
+                localStorage.removeItem('chessTourUsers');
+                localStorage.removeItem('currentUser');
+                renderUsers();
+            }
+        }
+
+        // Build the table dynamically from Local Storage data
+        function renderUsers() {
+            const users = getUsers();
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+            
+            const usernames = Object.keys(users);
+            
+            if (usernames.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-users-slash" style="font-size: 50px;"></i>
+                                <p>No users are currently registered in the system.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            usernames.forEach((username) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${escapeHTML(username)}</strong></td>
+                    <td>
+                        <span class="password-badge">
+                            <i class="fa-solid fa-shield-check"></i> Secured
+                        </span>
+                    </td>
+                    <td>Local Storage Account</td>
+                    <td>
+                        <button class="btn-action btn-delete" onclick="deleteUser('${escapeHTML(username)}')">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Simple utility to prevent script injection when rendering usernames
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        // Initialize user directory on load
+        document.addEventListener('DOMContentLoaded', renderUsers);
+    </script>
+</body>
+</html>
