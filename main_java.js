@@ -477,7 +477,22 @@ function deleteAccount() {
         btnText: 'DELETE PERMANENTLY',
         btnClass: 'danger',
         onConfirm: () => {
-            localStorage.clear();
+            const currentUsername = localStorage.getItem('currentUser');
+            const allUsers = JSON.parse(localStorage.getItem('chessTourUsers') || '{}');
+            
+            // Remove from registry
+            delete allUsers[currentUsername];
+            localStorage.setItem('chessTourUsers', JSON.stringify(allUsers));
+            
+            // Clear session
+            localStorage.removeItem('currentUser');
+            
+            // Optional: Clear user-specific data (ETH, Skins etc)
+            // Note: Currently these are shared in this mock app, but we can clear them for fresh start
+            localStorage.removeItem('userEth');
+            localStorage.removeItem('userPoints');
+            localStorage.removeItem('ownedSkins');
+            
             window.location.href = 'index.html';
         }
     });
@@ -503,4 +518,67 @@ function showConfirm(options) {
     };
     
     openModal('confirmModal');
+}
+
+// ───── Profile Editing Logic ─────
+
+function openEditProfile() {
+    const username = localStorage.getItem('currentUser');
+    if (!username) return;
+    
+    document.getElementById('editUsername').value = username;
+    document.getElementById('editPassword').value = '';
+    
+    openModal('editProfileModal');
+}
+
+function saveProfileChanges() {
+    const newUsername = document.getElementById('editUsername').value.trim();
+    const newPassword = document.getElementById('editPassword').value.trim();
+    const currentUsername = localStorage.getItem('currentUser');
+    
+    if (!newUsername) {
+        showToast('Username cannot be empty!', 'error');
+        return;
+    }
+
+    const allUsers = JSON.parse(localStorage.getItem('chessTourUsers') || '{}');
+    
+    // Check if new username is already taken by someone else
+    if (newUsername !== currentUsername && allUsers[newUsername]) {
+        showToast('Username already taken!', 'error');
+        return;
+    }
+
+    let confirmMsg = 'Confirm profile changes?';
+    if (newPassword) confirmMsg = 'Update password and save?';
+    if (newUsername !== currentUsername) confirmMsg = `Change username to "${newUsername}"?`;
+
+    showConfirm({
+        title: 'Save Profile?',
+        message: confirmMsg,
+        icon: '⚙️',
+        btnText: 'Save Changes',
+        onConfirm: () => {
+            const userData = allUsers[currentUsername];
+            
+            if (newUsername !== currentUsername) {
+                // Transfer data to new username key
+                allUsers[newUsername] = userData;
+                delete allUsers[currentUsername];
+                localStorage.setItem('currentUser', newUsername);
+            }
+
+            if (newPassword) {
+                allUsers[newUsername].password = newPassword;
+            }
+
+            localStorage.setItem('chessTourUsers', JSON.stringify(allUsers));
+            
+            showToast('Profile updated successfully! 🚀', 'success');
+            setTimeout(() => {
+                window.location.reload(); 
+            }, 1000);
+        }
+    });
 }
