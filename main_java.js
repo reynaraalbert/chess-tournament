@@ -204,6 +204,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (welcome) welcome.textContent = `Welcome, ${currentUser}`;
     setGreeting(currentUser);
     setupActionButtons();
+
+    // Highlight the active tier card in the ELO section
+    const eloRaw = localStorage.getItem('userElo');
+    let activeTier = 'unranked';
+    if (eloRaw !== null) {
+        const elo = parseInt(eloRaw);
+        if (elo >= 1500)      activeTier = 'diamond';
+        else if (elo >= 1300) activeTier = 'gold';
+        else if (elo >= 1150) activeTier = 'silver';
+        else if (elo >= 1000) activeTier = 'bronze';
+        else                  activeTier = 'beginner';
+    }
+    document.querySelectorAll('.tier-card').forEach(card => {
+        card.classList.toggle('active', card.dataset.tier === activeTier);
+    });
 });
 
 // Terminate Session  

@@ -430,21 +430,27 @@
 
             const users = getUsers();
 
-            // Validate credentials
-            if (users[username] && users[username].password === password) {
+            // Validate credentials — give specific feedback per case
+            if (!users[username]) {
+                // Username doesn't exist at all
+                showNotification(`Account "${username}" not found. Please register first.`);
+                // Delay then flip to Register view, pre-filling the username
+                setTimeout(() => {
+                    toggleForm();
+                    document.getElementById('regUsername').value = username;
+                }, 2000);
+            } else if (users[username].password !== password) {
+                // Account exists but wrong password
+                showNotification('Wrong password. Please try again.');
+            } else {
+                // Correct credentials
                 showNotification('Login successful!', true);
-                
-                // Save current user session
                 localStorage.setItem('currentUser', username);
                 saveLastUser(username);
                 updateGreeting();
-                
-                // Redirect to main.html as the entry point for the tour app
                 setTimeout(() => {
                     window.location.href = 'main.html';
                 }, 1200);
-            } else {
-                showNotification('Invalid username or password');
             }
         });
 

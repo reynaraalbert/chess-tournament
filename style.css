@@ -657,7 +657,131 @@ body {
   letter-spacing: 1px;
 }
 
+/* ELO Tier Section on Dashboard */
+.tier-section {
+  margin-top: 50px;
+  padding: 36px 40px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.tier-section-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.tier-section-header i {
+  font-size: 32px;
+  color: var(--primary);
+  background: rgba(0, 210, 255, 0.1);
+  border: 1px solid rgba(0, 210, 255, 0.3);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tier-section-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(to right, #00d2ff, #3a7bd5);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  margin-bottom: 4px;
+}
+
+.tier-section-header p {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.tier-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.tier-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tier-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateY(-3px);
+}
+
+.tier-card.active {
+  background: rgba(0, 210, 255, 0.1);
+  border-color: rgba(0, 210, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.15);
+  transform: translateY(-4px);
+}
+
+.tier-card.active::after {
+  content: "YOU";
+  position: absolute;
+  top: -10px;
+  font-size: 9px;
+  font-weight: 800;
+  background: var(--primary);
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+}
+
+.tier-card-icon {
+  font-size: 28px;
+}
+
+.tier-card-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.tier-card.active .tier-card-name {
+  color: var(--primary);
+}
+
+.tier-card-range {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.tier-card.active .tier-card-range {
+  color: rgba(0, 210, 255, 0.7);
+}
+
 /* Responsive adjustments */
+@media (max-width: 900px) {
+  .tier-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .nav-user {
     gap: 10px;
@@ -667,5 +791,11 @@ body {
   }
   .gradient-text {
     font-size: 32px;
+  }
+  .tier-section {
+    padding: 24px 20px;
+  }
+  .tier-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
