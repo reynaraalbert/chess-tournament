@@ -81,19 +81,25 @@ function showStats() {
     document.getElementById('optionsDropdown').classList.remove('open');
 
     const username = localStorage.getItem('currentUser') || 'Unknown';
-    const elo = parseInt(localStorage.getItem('userElo') || '1200');
+    const eloRaw = localStorage.getItem('userElo');  // null if never played
     const registeredRaw = localStorage.getItem('registeredTournaments');
     const registered = registeredRaw ? JSON.parse(registeredRaw) : [];
 
-    // Determine rank tier
-    let rank = '🔵 Beginner';
-    if (elo >= 1500) rank = '💎 Diamond';
-    else if (elo >= 1300) rank = '🥇 Gold';
-    else if (elo >= 1150) rank = '🥈 Silver';
-    else if (elo >= 1000) rank = '🥉 Bronze';
+    // Determine rank tier — only after at least 1 match (userElo exists)
+    let rank = '⬜ Unranked';
+    let eloDisplay = '—';
+    if (eloRaw !== null) {
+        const elo = parseInt(eloRaw);
+        eloDisplay = `${elo} ELO`;
+        if (elo >= 1500) rank = '💎 Diamond';
+        else if (elo >= 1300) rank = '🥇 Gold';
+        else if (elo >= 1150) rank = '🥈 Silver';
+        else if (elo >= 1000) rank = '🥉 Bronze';
+        else rank = '🔵 Beginner';
+    }
 
     document.getElementById('statUsername').textContent = username;
-    document.getElementById('statElo').textContent = `${elo} ELO`;
+    document.getElementById('statElo').textContent = eloDisplay;
     document.getElementById('statRank').textContent = rank;
     document.getElementById('statTournaments').textContent = registered.length;
 
