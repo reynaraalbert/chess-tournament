@@ -217,17 +217,17 @@ document.addEventListener('change', (e) => {
 // ───────────── Customization Shop Logic ─────────────
 const SHOP_ITEMS = {
     boards: [
-        { id: 'default', name: 'Classic Wood', price: 0, class: 'board-default' },
-        { id: 'ocean',   name: 'Ocean Blue',   price: 2.0, class: 'board-ocean' },
-        { id: 'forest',  name: 'Forest Green', price: 2.5, class: 'board-forest' },
-        { id: 'dark',    name: 'Midnight',     price: 3.5, class: 'board-dark' },
-        { id: 'purple',  name: 'Royal Purple', price: 4.0, class: 'board-purple' },
+        { id: 'default', name: 'Classic Wood', price: 0, class: 'board-default', img: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=200' },
+        { id: 'ocean',   name: 'Ocean Blue',   price: 2.0, class: 'board-ocean', img: 'img/ocean_board.png' },
+        { id: 'forest',  name: 'Forest Green', price: 2.5, class: 'board-forest', img: 'img/forest_board.png' },
+        { id: 'dark',    name: 'Midnight',     price: 3.5, class: 'board-dark', img: 'img/midnight_board.png' },
+        { id: 'purple',  name: 'Royal Purple', price: 4.0, class: 'board-purple', img: 'img/purple_board.png' },
     ],
     pieces: [
-        { id: 'wikipedia', name: 'Standard (Wiki)', price: 0 },
-        { id: 'alpha',     name: 'Alpha Style',    price: 3.0 },
-        { id: 'cburnett',  name: 'Classic C.B.',    price: 3.5 },
-        { id: 'neo',       name: 'Modern Neo',     price: 5.0 },
+        { id: 'wikipedia', name: 'Standard (Wiki)', price: 0, img: 'https://chessboardjs.com/img/chesspieces/wikipedia/wN.png' },
+        { id: 'alpha',     name: 'Alpha Style',    price: 3.0, img: 'https://chessboardjs.com/img/chesspieces/wikipedia/wB.png' },
+        { id: 'cburnett',  name: 'Classic C.B.',    price: 3.5, img: 'https://chessboardjs.com/img/chesspieces/wikipedia/wR.png' },
+        { id: 'neo',       name: 'Modern Neo',     price: 5.0, img: 'img/modern_pieces.png' },
     ]
 };
 
@@ -276,9 +276,13 @@ function renderShopItems() {
         const card = document.createElement('div');
         card.className = `shop-item ${isEquipped ? 'equipped' : ''}`;
         
+        const previewHtml = item.img 
+            ? `<img src="${item.img}" style="width:100%; height:100%; object-fit:cover;">` 
+            : `<div class="item-preview-board"><div></div><div style="opacity:0.5"></div><div style="opacity:0.5"></div><div></div></div>`;
+
         card.innerHTML = `
-            <div class="item-preview ${activeShopTab === 'boards' ? item.class : ''}">
-                ${activeShopTab === 'boards' ? '<div class="item-preview-board"><div></div><div style="opacity:0.5"></div><div style="opacity:0.5"></div><div></div></div>' : `<img src="https://chessboardjs.com/img/chesspieces/wikipedia/wN.png" style="filter: ${item.id === 'default' ? 'none' : 'hue-rotate(150deg)'}; width: 60px;">`}
+            <div class="item-preview">
+                ${previewHtml}
             </div>
             <div class="item-name">${item.name}</div>
             <div class="item-footer">
